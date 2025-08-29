@@ -9,8 +9,14 @@ import {
   BookOpen, 
   Swords, 
   FileText, 
-  LogOut 
+  LogOut,
+  ChevronRight
 } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -52,8 +58,23 @@ export default function DashboardSidebar() {
     },
   ];
 
-  return (
-    <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col h-screen">
+  // Mobile sidebar with Sheet component
+  const MobileSidebar = () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="md:hidden">
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-64 p-0">
+        <SidebarContent />
+      </SheetContent>
+    </Sheet>
+  );
+
+  // Sidebar content component
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
       <div className="p-6">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-black font-bold">
@@ -67,17 +88,19 @@ export default function DashboardSidebar() {
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.name}>
-              <Link
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                  isActive(item.href)
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
-                }`}
+              <Button
+                asChild
+                variant={isActive(item.href) ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  isActive(item.href) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                )}
               >
-                <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </Link>
+                <Link href={item.href}>
+                  <item.icon className="mr-2 h-5 w-5" />
+                  {item.name}
+                </Link>
+              </Button>
             </li>
           ))}
         </ul>
@@ -85,20 +108,36 @@ export default function DashboardSidebar() {
       
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-accent-foreground">
-            US
-          </div>
+          <Avatar>
+            <AvatarImage src="/avatar.png" alt="User" />
+            <AvatarFallback>US</AvatarFallback>
+          </Avatar>
           <div>
             <p className="font-medium">User Name</p>
             <p className="text-sm text-sidebar-foreground/70">user@example.com</p>
           </div>
         </div>
         
-        <button className="flex items-center gap-2 w-full px-3 py-2 text-sidebar-foreground/80 hover:bg-sidebar-accent/50 rounded-md transition-colors">
-          <LogOut className="w-4 h-4" />
-          <span>Sign out</span>
-        </button>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sidebar-foreground/80"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
+        </Button>
       </div>
-    </aside>
+    </div>
+  );
+
+  // Return desktop sidebar for larger screens, mobile sidebar for smaller screens
+  return (
+    <>
+      <aside className="hidden md:flex w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex-col h-screen">
+        <SidebarContent />
+      </aside>
+      <div className="md:hidden">
+        <MobileSidebar />
+      </div>
+    </>
   );
 }

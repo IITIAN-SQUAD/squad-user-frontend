@@ -1,109 +1,131 @@
-import { BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function PracticeTab() {
-  // Example practice categories - these would come from your API in a real app
-  const practiceCategories = [
+  // Example practice categories
+  const categories = [
     {
-      id: "physics",
       name: "Physics",
+      progress: 65,
       topics: 24,
-      questions: 1200,
-      progress: 35,
+      completed: 16,
     },
     {
-      id: "chemistry",
       name: "Chemistry",
-      topics: 18,
-      questions: 950,
       progress: 42,
+      topics: 20,
+      completed: 8,
     },
     {
-      id: "mathematics",
       name: "Mathematics",
-      topics: 22,
-      questions: 1350,
-      progress: 28,
-    }
+      progress: 78,
+      topics: 30,
+      completed: 23,
+    },
+  ];
+
+  // Example recent activity
+  const recentActivity = [
+    {
+      id: 1,
+      topic: "Kinematics",
+      category: "Physics",
+      score: "8/10",
+      date: "Today",
+    },
+    {
+      id: 2,
+      topic: "Organic Chemistry",
+      category: "Chemistry",
+      score: "7/10",
+      date: "Yesterday",
+    },
+    {
+      id: 3,
+      topic: "Calculus",
+      category: "Mathematics",
+      score: "9/10",
+      date: "2 days ago",
+    },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Practice</h1>
-        <button className="px-4 py-2 bg-brand text-black font-medium rounded-md hover:bg-opacity-90 transition-colors">
-          Start Quick Practice
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {practiceCategories.map((category) => (
-          <div 
-            key={category.id}
-            className="border border-border rounded-lg p-6 bg-card text-card-foreground hover:border-brand transition-colors"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">{category.name}</h3>
-              <BookOpen className="h-5 w-5 text-muted-foreground" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Topics</span>
-                <span className="font-medium">{category.topics}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Questions</span>
-                <span className="font-medium">{category.questions}</span>
-              </div>
-              
-              <div className="mt-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{category.progress}%</span>
+    <div className="p-6 space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Practice</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <Card key={category.name}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle>{category.name}</CardTitle>
+                  <Badge variant="outline">
+                    {category.completed}/{category.topics} topics
+                  </Badge>
                 </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-brand" 
-                    style={{ width: `${category.progress}%` }}
-                  ></div>
+              </CardHeader>
+              <CardContent>
+                <Progress value={category.progress} className="h-2 mb-2" />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{category.progress}% complete</span>
                 </div>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <button className="w-full py-2 border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                Continue Practice
-              </button>
-            </div>
-          </div>
-        ))}
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full">Continue Practice</Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
       
-      <div className="mt-8 border border-border rounded-lg p-6 bg-card text-card-foreground">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-border">
-            <div>
-              <p className="font-medium">Physics - Mechanics Quiz</p>
-              <p className="text-sm text-muted-foreground">15 questions • 75% correct</p>
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Your recent practice sessions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-muted text-muted-foreground text-sm">
+                    <th className="text-left py-3 px-4 font-medium">Topic</th>
+                    <th className="text-left py-3 px-4 font-medium">Category</th>
+                    <th className="text-left py-3 px-4 font-medium">Score</th>
+                    <th className="text-left py-3 px-4 font-medium">Date</th>
+                    <th className="text-left py-3 px-4 font-medium">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentActivity.map((activity) => (
+                    <tr key={activity.id} className="border-t border-border">
+                      <td className="py-3 px-4">{activity.topic}</td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline">{activity.category}</Badge>
+                      </td>
+                      <td className="py-3 px-4">{activity.score}</td>
+                      <td className="py-3 px-4 text-muted-foreground">{activity.date}</td>
+                      <td className="py-3 px-4">
+                        <Button variant="ghost" size="sm">
+                          Review
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <span className="text-sm text-muted-foreground">2 hours ago</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-border">
-            <div>
-              <p className="font-medium">Chemistry - Organic Chemistry Test</p>
-              <p className="text-sm text-muted-foreground">20 questions • 80% correct</p>
-            </div>
-            <span className="text-sm text-muted-foreground">Yesterday</span>
-          </div>
-          <div className="flex items-center justify-between py-3">
-            <div>
-              <p className="font-medium">Mathematics - Calculus Practice</p>
-              <p className="text-sm text-muted-foreground">25 questions • 68% correct</p>
-            </div>
-            <span className="text-sm text-muted-foreground">3 days ago</span>
-          </div>
-        </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">View All Activity</Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
