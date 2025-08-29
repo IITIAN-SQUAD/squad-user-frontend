@@ -1,0 +1,19 @@
+import { ReactNode } from "react";
+import DashboardSidebar from "../dashboard/DashboardSidebar";
+import DashboardHeader from "../dashboard/DashboardHeader";
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <div className="flex min-h-screen bg-background">
+      <DashboardSidebar />
+      <div className="flex flex-col flex-1">
+        <DashboardHeader />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  );
+}
