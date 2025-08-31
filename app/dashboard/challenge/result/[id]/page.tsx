@@ -335,7 +335,7 @@ export default function ChallengeResultPage() {
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h4 className="font-medium">Q{index + 1}. {question.title}</h4>
+                          <h4 className="font-medium">Q{index + 1}. {question.question}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant={question.isCorrect ? "default" : "destructive"} className="text-xs">
                               {question.isCorrect ? "Correct" : question.userAnswer ? "Wrong" : "Unattempted"}
@@ -382,7 +382,7 @@ export default function ChallengeResultPage() {
                         <div className="mb-3">
                           <p className="font-medium text-blue-900 text-xs mb-1">Key Concepts:</p>
                           <div className="flex flex-wrap gap-1">
-                            {(question.concepts || ['Problem Solving', 'Analytical Thinking']).map((concept, idx) => (
+                            {['Problem Solving', 'Analytical Thinking'].map((concept, idx) => (
                               <Badge key={idx} variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300">
                                 {concept}
                               </Badge>

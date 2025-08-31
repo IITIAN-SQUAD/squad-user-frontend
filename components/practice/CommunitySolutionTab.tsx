@@ -60,7 +60,7 @@ interface CommunitySolutionTabProps {
   questionId: string
 }
 
-export default function CommunitySolutionTab() {
+export default function CommunitySolutionTab({ questionId }: CommunitySolutionTabProps) {
   const [solutions, setSolutions] = useState<Solution[]>(mockSolutions)
   const [newSolution, setNewSolution] = useState("")
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
