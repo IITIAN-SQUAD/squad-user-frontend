@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Swords, Clock, Users, Trophy, Calendar, Timer, Award, ChevronRight } from "lucide-react";
+import { Swords, Users, Trophy, Calendar, Timer, Award, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
