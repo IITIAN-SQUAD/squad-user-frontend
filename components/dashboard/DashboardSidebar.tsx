@@ -10,7 +10,9 @@ import {
   Swords, 
   FileText, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  RotateCcw,
+  Brain
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -47,9 +49,19 @@ export default function DashboardSidebar() {
       icon: BookOpen,
     },
     {
+      name: "Revision",
+      href: "/dashboard/revision",
+      icon: RotateCcw,
+    },
+    {
       name: "Challenge",
       href: "/dashboard/challenge",
       icon: Swords,
+    },
+    {
+      name: "AI Coaching",
+      href: "/dashboard/coaching",
+      icon: Brain,
     },
     {
       name: "PYQ",
@@ -74,14 +86,13 @@ export default function DashboardSidebar() {
 
   // Sidebar content component
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       <div className="p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-black font-bold">
+        <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
+          <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
             IS
           </div>
-          <h1 className="text-xl font-bold">IITian Squad</h1>
-        </div>
+        </Link>
       </div>
       
       <nav className="flex-1 px-4 py-2">

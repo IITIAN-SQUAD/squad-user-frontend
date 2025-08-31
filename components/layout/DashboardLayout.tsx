@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import DashboardSidebar from "../dashboard/DashboardSidebar";
 import DashboardHeader from "../dashboard/DashboardHeader";
+import Footer from "../ui/Footer";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex flex-col flex-1">
         <DashboardHeader />
         <main className="flex-1 p-6">{children}</main>
+        <Footer />
       </div>
     </div>
   );
