@@ -1,131 +1,80 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Filter, X } from "lucide-react";
+import PerformanceGraphs from "../practice/PerformanceGraphs";
+import PracticeFilters from "../practice/PracticeFilters";
+import QuestionList from "../practice/QuestionList";
 
 export default function PracticeTab() {
-  // Example practice categories
-  const categories = [
-    {
-      name: "Physics",
-      progress: 65,
-      topics: 24,
-      completed: 16,
-    },
-    {
-      name: "Chemistry",
-      progress: 42,
-      topics: 20,
-      completed: 8,
-    },
-    {
-      name: "Mathematics",
-      progress: 78,
-      topics: 30,
-      completed: 23,
-    },
-  ];
-
-  // Example recent activity
-  const recentActivity = [
-    {
-      id: 1,
-      topic: "Kinematics",
-      category: "Physics",
-      score: "8/10",
-      date: "Today",
-    },
-    {
-      id: 2,
-      topic: "Organic Chemistry",
-      category: "Chemistry",
-      score: "7/10",
-      date: "Yesterday",
-    },
-    {
-      id: 3,
-      topic: "Calculus",
-      category: "Mathematics",
-      score: "9/10",
-      date: "2 days ago",
-    },
-  ];
+  const [showFilters, setShowFilters] = useState(false);
 
   return (
-    <div className="p-6 space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold mb-6">Practice</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <Card key={category.name}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle>{category.name}</CardTitle>
-                  <Badge variant="outline">
-                    {category.completed}/{category.topics} topics
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Progress value={category.progress} className="h-2 mb-2" />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{category.progress}% complete</span>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">Continue Practice</Button>
-              </CardFooter>
-            </Card>
-          ))}
+    <div className="w-full max-w-none">
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Practice Section</h2>
+          <p className="text-muted-foreground mb-6">
+            Practice questions without any timer or accuracy pressure. Focus on learning and understanding concepts.
+          </p>
         </div>
-      </div>
-      
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your recent practice sessions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-muted text-muted-foreground text-sm">
-                    <th className="text-left py-3 px-4 font-medium">Topic</th>
-                    <th className="text-left py-3 px-4 font-medium">Category</th>
-                    <th className="text-left py-3 px-4 font-medium">Score</th>
-                    <th className="text-left py-3 px-4 font-medium">Date</th>
-                    <th className="text-left py-3 px-4 font-medium">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentActivity.map((activity) => (
-                    <tr key={activity.id} className="border-t border-border">
-                      <td className="py-3 px-4">{activity.topic}</td>
-                      <td className="py-3 px-4">
-                        <Badge variant="outline">{activity.category}</Badge>
-                      </td>
-                      <td className="py-3 px-4">{activity.score}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{activity.date}</td>
-                      <td className="py-3 px-4">
-                        <Button variant="ghost" size="sm">
-                          Review
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+        {/* Performance Analytics */}
+        <PerformanceGraphs />
+
+        {/* Practice Interface */}
+        <div className="relative">
+          {/* Filter Toggle Button */}
+          <div className="flex justify-between items-center mb-4">
+            <div></div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </Button>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="w-full overflow-hidden min-w-0">
+            {/* Question List - Full Width */}
+            <div className="w-full">
+              <QuestionList />
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full">View All Activity</Button>
-          </CardFooter>
-        </Card>
+          </div>
+          
+          {/* Filters - Overlay Panel */}
+          {showFilters && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 bg-black/20 z-40" 
+                onClick={() => setShowFilters(false)}
+              />
+              
+              {/* Filter Panel - Always Fixed Overlay */}
+              <div className="fixed right-4 top-20 bottom-4 w-96 max-w-[calc(100vw-2rem)] bg-white border rounded-lg shadow-xl z-50 flex flex-col">
+                <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
+                  <h3 className="font-semibold">Filters</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex-1 overflow-y-auto overscroll-contain">
+                  <PracticeFilters />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

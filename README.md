@@ -16,42 +16,105 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 ## Features
 
-- **Brand Identity**: Consistent use of IITian Squad's gold brand color (#FFD700) throughout the interface
-- **Modern UI**: Clean, responsive design built with Tailwind CSS
-- **Typography**: Uses Inter font family for optimal readability
-- **Authentication**: User login and signup flows
-- **Responsive Layout**: Mobile-friendly design that works on all device sizes
+### 🎯 **Practice Section**
+- **Performance Analytics**: Comprehensive graphs showing overall performance, subject-wise accuracy, weekly progress, and topic coverage
+- **Advanced Filtering System**: Hierarchical filters (Subject → Chapter → Topic) with year, difficulty, and question type selection
+- **Filter Management**: Save up to 5 custom filter combinations for quick access
+- **Question Management**: Bookmark questions, create custom lists, and track your progress
+- **Detailed Question View**: Each question includes unique hash, difficulty level, attempt statistics, and comprehensive tagging
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, our brand font.
+### 🔐 **Authentication**
+- **Google OAuth Only**: Streamlined signup process using only Google authentication (no Facebook)
+- **Secure Session Management**: JWT-based authentication with NextAuth.js
 
-## Learn More
+### 📊 **Dashboard**
+- **Performance Tracking**: Visual representation of your learning journey
+- **Responsive Design**: Optimized for all devices and screen sizes
 
-To learn more about Next.js, take a look at the following resources:
+### 🎨 **Modern UI/UX**
+- **shadcn/ui Components**: Beautiful, accessible, and responsive design system
+- **Tailwind CSS**: Modern styling with consistent design patterns
+- **Interactive Charts**: Powered by Recharts for data visualization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Getting Started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerequisites
+- Node.js 18.18.0 or higher
+- npm or yarn package manager
+- Google OAuth credentials
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd squad-user-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   
+   Copy the example environment file:
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Fill in your environment variables in `.env.local`:
+   ```env
+   # Google OAuth Configuration
+   GOOGLE_CLIENT_ID=your_google_client_id_here
+   GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+   
+   # NextAuth Configuration
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=your_nextauth_secret_here
+   ```
+
+4. **Set up Google OAuth**
+   
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Enable Google+ API
+   - Create OAuth 2.0 credentials
+   - Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
+   - Copy Client ID and Client Secret to your `.env.local`
+
+5. **Generate NextAuth Secret**
+   ```bash
+   openssl rand -base64 32
+   ```
+   Add the generated secret to `NEXTAUTH_SECRET` in `.env.local`
+
+6. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+7. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## Project Structure
 
 ```
-├── app/                  # Next.js app directory
-│   ├── globals.css       # Global styles with brand colors
-│   ├── layout.tsx        # Root layout with Inter font
-│   ├── page.tsx          # Home page
-│   ├── login/            # Login page
-│   └── signup/           # Signup page
-├── components/           # React components
-│   ├── layout/           # Layout components
-│   │   └── MainLayout.tsx # Main layout wrapper
-│   └── ui/               # UI components
+├── app/                    # Next.js 13+ App Router
+│   ├── dashboard/         # Dashboard pages
+│   ├── login/            # Authentication pages
+│   ├── signup/           
+│   └── api/auth/         # NextAuth.js API routes
+├── components/           
+│   ├── dashboard/        # Dashboard-specific components
+│   ├── practice/         # Practice section components
+│   ├── layout/          # Layout components
+│   └── ui/              # Reusable UI components (shadcn/ui)
+├── lib/                 # Utility functions and configurations
+└── public/              # Static assets
 │       ├── Header.tsx    # Site header with navigation
 │       └── Footer.tsx    # Site footer
 ├── public/               # Static assets
