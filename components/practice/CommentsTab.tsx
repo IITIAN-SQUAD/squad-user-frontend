@@ -16,7 +16,7 @@ interface Comment {
   author: {
     name: string
     avatar?: string
-    reputation: number
+    xp: number
   }
   content: string
   createdAt: Date
@@ -32,7 +32,7 @@ const mockComments: Comment[] = [
     id: "1",
     author: {
       name: "Rahul Sharma",
-      reputation: 1250
+      xp: 1250
     },
     content: "This is a classic kinematics problem. The key is to identify that we have constant acceleration and use the appropriate equation. Remember that acceleration is the rate of change of velocity.",
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
@@ -43,7 +43,7 @@ const mockComments: Comment[] = [
         id: "1-1",
         author: {
           name: "Priya Singh",
-          reputation: 890
+          xp: 890
         },
         content: "Thanks for the explanation! I was confused about which formula to use.",
         createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
@@ -56,8 +56,8 @@ const mockComments: Comment[] = [
   {
     id: "2",
     author: {
-      name: "Amit Kumar",
-      reputation: 2100
+      name: "Arjun Patel",
+      xp: 2100
     },
     content: "Alternative approach: You can also solve this using v² = u² + 2as if you know the displacement. But since displacement is not given, the formula a = (v-u)/t is the most direct approach.",
     createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
@@ -85,7 +85,7 @@ export default function CommentsTab({ questionId }: CommentsTabProps) {
       id: Date.now().toString(),
       author: {
         name: "Current User",
-        reputation: 500
+        xp: 500
       },
       content: newComment,
       createdAt: new Date(),
@@ -105,7 +105,7 @@ export default function CommentsTab({ questionId }: CommentsTabProps) {
       id: `${parentId}-${Date.now()}`,
       author: {
         name: "Current User",
-        reputation: 500
+        xp: 500
       },
       content: replyText,
       createdAt: new Date(),
@@ -186,7 +186,7 @@ export default function CommentsTab({ questionId }: CommentsTabProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="font-medium text-sm text-gray-900">{comment.author.name}</span>
-              <span className="text-xs text-gray-500">{comment.author.reputation} rep</span>
+              <span className="text-xs text-gray-500">{comment.author.xp} XP</span>
               <span className="text-xs text-gray-400">•</span>
               <span className="text-xs text-gray-500">
                 {formatDistanceToNow(comment.createdAt, { addSuffix: true })}

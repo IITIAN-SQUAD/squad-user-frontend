@@ -389,6 +389,14 @@ export default function QuestionList() {
                       ID {getSortIcon('id')}
                     </button>
                   </th>
+                  <th className="text-left py-3 px-3 font-medium min-w-0 flex-1">
+                    <button
+                      onClick={() => handleSort('description')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
+                      Question {getSortIcon('description')}
+                    </button>
+                  </th>
                   <th className="text-left py-3 px-3 font-medium w-20">
                     <button
                       onClick={() => handleSort('year')}
@@ -410,7 +418,7 @@ export default function QuestionList() {
                       onClick={() => handleSort('attempted')}
                       className="flex items-center gap-1 hover:text-primary"
                     >
-                      Attempted {getSortIcon('attempted')}
+                      Attempts {getSortIcon('attempted')}
                     </button>
                   </th>
                   <th className="text-left py-3 px-2 font-medium w-20 sm:w-28">
@@ -418,7 +426,7 @@ export default function QuestionList() {
                       onClick={() => handleSort('avgAccuracy')}
                       className="flex items-center gap-1 hover:text-primary"
                     >
-                      Accuracy {getSortIcon('avgAccuracy')}
+                      Avg Score {getSortIcon('avgAccuracy')}
                     </button>
                   </th>
                   <th className="text-left py-3 px-2 font-medium w-32 sm:w-48">Tags</th>
@@ -450,7 +458,7 @@ export default function QuestionList() {
                       </td>
                       <td className="py-3 px-3">
                         <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
-                          {question.id}
+                          {question.hash}
                         </code>
                       </td>
                       <td className="py-3 px-3">

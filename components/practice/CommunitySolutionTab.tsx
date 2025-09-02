@@ -10,15 +10,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ThumbsUp, ThumbsDown, Flag, Upload, Image as ImageIcon, Bold, Italic, Code, Share, Eye, ZoomIn, ZoomOut, X } from "lucide-react"
+import { ThumbsUp, ThumbsDown, Flag, Upload, Image as ImageIcon, Bold, Italic, Code, Share, Eye, ZoomIn, ZoomOut, X, MessageCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+
+interface Reply {
+  id: string
+  author: {
+    name: string
+    avatar?: string
+    xp: number
+  }
+  content: string
+  createdAt: Date
+  upvotes: number
+  downvotes: number
+  isUpvoted?: boolean
+  isDownvoted?: boolean
+}
 
 interface Solution {
   id: string
   author: {
     name: string
     avatar?: string
-    reputation: number
+    xp: number
   }
   content: string
   imageUrl?: string
@@ -26,6 +41,7 @@ interface Solution {
   createdAt: Date
   upvotes: number
   downvotes: number
+  replies: Reply[]
   isUpvoted?: boolean
   isDownvoted?: boolean
 }
@@ -35,24 +51,49 @@ const mockSolutions: Solution[] = [
     id: "1",
     author: {
       name: "Dr. Rajesh Kumar",
-      reputation: 3500
+      xp: 3500
     },
     content: "Here's a step-by-step solution:\n\n1. Given: Initial velocity (u) = 10 m/s, Final velocity (v) = 30 m/s, Time (t) = 4 s\n\n2. We need to find acceleration (a)\n\n3. Using the kinematic equation: v = u + at\n   30 = 10 + a(4)\n   20 = 4a\n   a = 5 m/s²\n\nAlternatively, we can use: a = (v - u)/t = (30 - 10)/4 = 20/4 = 5 m/s²",
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
     upvotes: 25,
-    downvotes: 1
+    downvotes: 1,
+    replies: [
+      {
+        id: "1-1",
+        author: {
+          name: "Vikash Singh",
+          xp: 750
+        },
+        content: "Great explanation! The step-by-step approach makes it very clear. Thanks for showing both methods.",
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        upvotes: 5,
+        downvotes: 0
+      },
+      {
+        id: "1-2",
+        author: {
+          name: "Ananya Reddy",
+          xp: 920
+        },
+        content: "Could you explain when we should use v² = u² + 2as instead of this formula?",
+        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+        upvotes: 3,
+        downvotes: 0
+      }
+    ]
   },
   {
     id: "2",
     author: {
-      name: "Priya Sharma",
-      reputation: 1800
+      name: "Sneha Gupta",
+      xp: 1800
     },
     content: "Visual approach with graph method:\n\nSince acceleration is constant, we can draw a velocity-time graph. The slope of this graph gives us the acceleration.\n\nSlope = (Change in velocity) / (Change in time)\nSlope = (30 - 10) / (4 - 0) = 20/4 = 5 m/s²",
     imageUrl: "/placeholder-graph.png",
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
     upvotes: 18,
-    downvotes: 2
+    downvotes: 2,
+    replies: []
   }
 ]
 
@@ -69,6 +110,8 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
   const [imageSize, setImageSize] = useState(300) // Default image width in pixels
   const [sortBy, setSortBy] = useState<"upvotes" | "date">("upvotes")
   const [editorSelection, setEditorSelection] = useState({ start: 0, end: 0 })
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState("")
 
   const handleAddSolution = () => {
     if (!newSolution.trim()) return
@@ -77,14 +120,15 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
       id: Date.now().toString(),
       author: {
         name: "Current User",
-        reputation: 500
+        xp: 500
       },
       content: newSolution,
       imageUrl: selectedImage ? URL.createObjectURL(selectedImage) : undefined,
       imageSize: selectedImage ? imageSize : undefined,
       createdAt: new Date(),
       upvotes: 0,
-      downvotes: 0
+      downvotes: 0,
+      replies: []
     }
 
     setSolutions(prev => [solution, ...prev])
@@ -95,28 +139,61 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
     setShowEditor(false)
   }
 
-  const handleVote = (solutionId: string, type: 'up' | 'down') => {
+  const handleVote = (solutionId: string, type: 'up' | 'down', replyId?: string) => {
     setSolutions(prev => prev.map(solution => {
-      if (solution.id === solutionId) {
-        if (type === 'up') {
+      if (replyId) {
+        // Voting on a reply
+        if (solution.id === solutionId) {
           return {
             ...solution,
-            upvotes: solution.isUpvoted ? solution.upvotes - 1 : solution.upvotes + 1,
-            downvotes: solution.isDownvoted ? solution.downvotes - 1 : solution.downvotes,
-            isUpvoted: !solution.isUpvoted,
-            isDownvoted: false
-          }
-        } else {
-          return {
-            ...solution,
-            downvotes: solution.isDownvoted ? solution.downvotes - 1 : solution.downvotes + 1,
-            upvotes: solution.isUpvoted ? solution.upvotes - 1 : solution.upvotes,
-            isDownvoted: !solution.isDownvoted,
-            isUpvoted: false
+            replies: solution.replies.map(reply => {
+              if (reply.id === replyId) {
+                if (type === 'up') {
+                  return {
+                    ...reply,
+                    upvotes: reply.isUpvoted ? reply.upvotes - 1 : reply.upvotes + 1,
+                    downvotes: reply.isDownvoted ? reply.downvotes - 1 : reply.downvotes,
+                    isUpvoted: !reply.isUpvoted,
+                    isDownvoted: false
+                  }
+                } else {
+                  return {
+                    ...reply,
+                    downvotes: reply.isDownvoted ? reply.downvotes - 1 : reply.downvotes + 1,
+                    upvotes: reply.isUpvoted ? reply.upvotes - 1 : reply.upvotes,
+                    isDownvoted: !reply.isDownvoted,
+                    isUpvoted: false
+                  }
+                }
+              }
+              return reply
+            })
           }
         }
+        return solution
+      } else {
+        // Voting on a solution
+        if (solution.id === solutionId) {
+          if (type === 'up') {
+            return {
+              ...solution,
+              upvotes: solution.isUpvoted ? solution.upvotes - 1 : solution.upvotes + 1,
+              downvotes: solution.isDownvoted ? solution.downvotes - 1 : solution.downvotes,
+              isUpvoted: !solution.isUpvoted,
+              isDownvoted: false
+            }
+          } else {
+            return {
+              ...solution,
+              downvotes: solution.isDownvoted ? solution.downvotes - 1 : solution.downvotes + 1,
+              upvotes: solution.isUpvoted ? solution.upvotes - 1 : solution.upvotes,
+              isDownvoted: !solution.isDownvoted,
+              isUpvoted: false
+            }
+          }
+        }
+        return solution
       }
-      return solution
     }))
   }
 
@@ -131,9 +208,34 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm">$1</code>')
-      .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-100 p-3 rounded-md overflow-x-auto"><code>$1</code></pre>')
+      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+      .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto my-4"><code class="font-mono text-sm whitespace-pre">$1</code></pre>')
       .replace(/\n/g, '<br>')
+  }
+
+  const handleAddReply = (solutionId: string) => {
+    if (!replyText.trim()) return
+
+    const reply: Reply = {
+      id: `${solutionId}-${Date.now()}`,
+      author: {
+        name: "Current User",
+        xp: 500
+      },
+      content: replyText,
+      createdAt: new Date(),
+      upvotes: 0,
+      downvotes: 0
+    }
+
+    setSolutions(prev => prev.map(solution => 
+      solution.id === solutionId 
+        ? { ...solution, replies: [...solution.replies, reply] }
+        : solution
+    ))
+    
+    setReplyText("")
+    setReplyingTo(null)
   }
 
   const adjustImageSize = (delta: number) => {
@@ -238,7 +340,7 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => insertFormatting('\n```\n', '\n```\n')}
+                        onClick={() => insertFormatting('```\n', '\n```')}
                         title="Code Block"
                       >
                         Code Block
@@ -256,7 +358,7 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
                     
                     <Textarea
                       id="solution-editor"
-                      placeholder="Explain your approach step by step...\n\nYou can use:\n**bold text**\n*italic text*\n`inline code`\n\n```\ncode blocks\n```"
+                      placeholder="Explain your approach step by step...\n\nYou can use:\n**bold text**\n*italic text*\n`inline code`\n\n```\nfunction solve() {\n  // Your code here\n}\n```"
                       value={newSolution}
                       onChange={(e) => setNewSolution(e.target.value)}
                       className="min-h-[200px] rounded-t-none font-mono text-sm"
@@ -392,11 +494,16 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
                   <div className="flex items-center gap-2 mb-3">
                     <span className="font-medium">{solution.author.name}</span>
                     <Badge variant="outline">
-                      {solution.author.reputation} rep
+                      {solution.author.xp} XP
                     </Badge>
                     <span className="text-sm text-muted-foreground">
                       {formatDistanceToNow(solution.createdAt, { addSuffix: true })}
                     </span>
+                    {solution.replies.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        • {solution.replies.length} {solution.replies.length === 1 ? 'reply' : 'replies'}
+                      </span>
+                    )}
                   </div>
                   
                   <div className="prose prose-sm max-w-none mb-4">
@@ -446,11 +553,114 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
                       </Button>
                     </div>
                     
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setReplyingTo(solution.id)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      Reply
+                    </Button>
+                    
                     <Button variant="ghost" size="sm">
                       <Flag className="h-4 w-4 mr-1" />
                       Report
                     </Button>
                   </div>
+                  
+                  {/* Reply Form */}
+                  {replyingTo === solution.id && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <Textarea
+                        placeholder="Add a thoughtful reply..."
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        className="mb-3 min-h-[80px] text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleAddReply(solution.id)}
+                          disabled={!replyText.trim()}
+                          className="h-7 text-xs"
+                        >
+                          Reply
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => {
+                            setReplyingTo(null)
+                            setReplyText("")
+                          }}
+                          className="h-7 text-xs"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Replies */}
+                  {solution.replies.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {solution.replies.map(reply => (
+                        <div key={reply.id} className="ml-4 pl-4 border-l-2 border-gray-200">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={reply.author.avatar} />
+                              <AvatarFallback className="text-xs">
+                                {reply.author.name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-medium text-sm">{reply.author.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {reply.author.xp} XP
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDistanceToNow(reply.createdAt, { addSuffix: true })}
+                                </span>
+                              </div>
+                              
+                              <div className="text-sm text-gray-800 mb-3 leading-relaxed">
+                                {reply.content}
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`h-6 px-2 text-xs ${reply.isUpvoted ? 'text-green-600 bg-green-50' : 'text-gray-500'}`}
+                                  onClick={() => handleVote(solution.id, 'up', reply.id)}
+                                >
+                                  <ThumbsUp className="h-3 w-3 mr-1" />
+                                  {reply.upvotes}
+                                </Button>
+                                
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`h-6 px-2 text-xs ${reply.isDownvoted ? 'text-red-600 bg-red-50' : 'text-gray-500'}`}
+                                  onClick={() => handleVote(solution.id, 'down', reply.id)}
+                                >
+                                  <ThumbsDown className="h-3 w-3 mr-1" />
+                                  {reply.downvotes}
+                                </Button>
+                                
+                                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-gray-500">
+                                  <Flag className="h-3 w-3 mr-1" />
+                                  Report
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
