@@ -12,7 +12,8 @@ import {
   LogOut,
   ChevronRight,
   RotateCcw,
-  Brain
+  Brain,
+  MessageSquare
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -64,9 +65,14 @@ export default function DashboardSidebar() {
       icon: Brain,
     },
     {
-      name: "PYQ",
+      name: "PYQ Paper",
       href: "/dashboard/pyq",
       icon: FileText,
+    },
+    {
+      name: "Doubts",
+      href: "/dashboard/doubts",
+      icon: MessageSquare,
     },
   ];
 

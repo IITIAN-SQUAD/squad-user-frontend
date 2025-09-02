@@ -30,7 +30,11 @@ import {
   FileText,
   Maximize,
   Menu,
-  MoreVertical
+  MoreVertical,
+  Award,
+  Users,
+  Play,
+  Bookmark
 } from "lucide-react";
 
 interface Question {
@@ -48,19 +52,21 @@ interface Question {
   negativeMarks: number;
 }
 
-interface Challenge {
+interface PYQPaper {
   id: string;
-  title: string;
-  description: string;
+  name: string;
+  exam: string;
+  year: number;
+  date: string;
+  totalMarks: number;
   duration: number; // minutes
   questions: Question[];
-  isPublic: boolean;
-  createdBy: string;
-  participants: number;
+  subjects: string[];
+  difficulty: string;
 }
 
 interface AttemptData {
-  challengeId: string;
+  paperId: string;
   answers: Record<string, any>;
   startTime: Date;
   timeRemaining: number;
@@ -70,18 +76,18 @@ interface AttemptData {
   visitedQuestions: string[];
 }
 
-export default function ChallengeAttemptPage() {
+export default function PYQAttemptPage() {
   const params = useParams();
   const router = useRouter();
-  const challengeId = params.id as string;
+  const paperId = params.id as string;
   
-  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [paper, setPaper] = useState<PYQPaper | null>(null);
   const [attemptData, setAttemptData] = useState<AttemptData | null>(null);
+  const [visitedQuestions, setVisitedQuestions] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [hasAcceptedMonitoring, setHasAcceptedMonitoring] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [showViolationOverlay, setShowViolationOverlay] = useState(false);
   const [violationType, setViolationType] = useState<'tab-switch' | 'fullscreen-exit' | 'window-switch'>('tab-switch');
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
@@ -90,12 +96,17 @@ export default function ChallengeAttemptPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSaveRef = useRef<Date>(new Date());
 
-  // Mock challenge data
-  const mockChallenge: Challenge = {
-    id: challengeId,
-    title: "JEE Physics Challenge",
-    description: "Test your physics knowledge with these challenging questions",
-    duration: 60,
+  // Mock paper data
+  const mockPaper: PYQPaper = {
+    id: paperId,
+    name: "JEE Main 25 Jan 2025 Shift 1",
+    exam: "JEE Main",
+    year: 2025,
+    date: "25 Jan 2025",
+    totalMarks: 300,
+    duration: 180,
+    subjects: ["Physics", "Chemistry", "Mathematics"],
+    difficulty: "Medium",
     questions: [
       {
         id: "Q1",
@@ -113,29 +124,67 @@ export default function ChallengeAttemptPage() {
       },
       {
         id: "Q2",
-        title: "Numerical Problem",
-        description: "Calculate the pH of a 0.01 M HCl solution. (Round to 2 decimal places)",
+        title: "Chemical Equilibrium",
+        description: "For the reaction N2 + 3H2 ⇌ 2NH3, if Kc = 0.5, what is the equilibrium constant for 2NH3 ⇌ N2 + 3H2?",
         type: "Numerical",
-        correctAnswer: 2.00,
+        correctAnswer: 2.0,
         subject: "Chemistry",
-        chapter: "Acids and Bases",
-        topic: "pH Calculation",
+        chapter: "Chemical Equilibrium",
+        topic: "Equilibrium Constants",
+        difficulty: "Hard",
+        marks: 4,
+        negativeMarks: 1
+      },
+      {
+        id: "Q3",
+        title: "Integration Problem",
+        description: "Evaluate the definite integral ∫₀¹ x²e^x dx",
+        type: "Single Choice",
+        options: ["e - 2", "2e - 5", "e - 1", "3e - 7"],
+        correctAnswer: "2e - 5",
+        subject: "Mathematics",
+        chapter: "Calculus",
+        topic: "Integration",
+        difficulty: "Hard",
+        marks: 4,
+        negativeMarks: 1
+      },
+      {
+        id: "Q4",
+        title: "Organic Chemistry",
+        description: "Which of the following compounds can exhibit optical isomerism?",
+        type: "Multiple Choice",
+        options: ["2-chlorobutane", "2-methylpentane", "3-methylhexane", "2,3-dimethylbutane"],
+        correctAnswer: ["2-chlorobutane", "3-methylhexane"],
+        subject: "Chemistry",
+        chapter: "Organic Chemistry",
+        topic: "Isomerism",
+        difficulty: "Medium",
+        marks: 4,
+        negativeMarks: 1
+      },
+      {
+        id: "Q5",
+        title: "Probability Theory",
+        description: "A bag contains 5 red balls and 3 blue balls. What is the probability of drawing 2 red balls without replacement?",
+        type: "Integer Type",
+        correctAnswer: 5,
+        subject: "Mathematics",
+        chapter: "Probability",
+        topic: "Conditional Probability",
         difficulty: "Easy",
         marks: 4,
         negativeMarks: 0
       }
-    ],
-    isPublic: true,
-    createdBy: "Admin",
-    participants: 156
+    ]
   };
 
-  // Initialize challenge and attempt data
+  // Initialize paper and attempt data
   useEffect(() => {
-    setChallenge(mockChallenge);
+    setPaper(mockPaper);
     
     // Load existing attempt or create new one
-    const savedAttempt = localStorage.getItem(`attempt_${challengeId}`);
+    const savedAttempt = localStorage.getItem(`pyq_attempt_${paperId}`);
     if (savedAttempt) {
       const parsed = JSON.parse(savedAttempt);
       parsed.startTime = new Date(parsed.startTime);
@@ -148,10 +197,10 @@ export default function ChallengeAttemptPage() {
       setTimeRemaining(parsed.timeRemaining);
     } else {
       const newAttempt: AttemptData = {
-        challengeId,
+        paperId,
         answers: {},
         startTime: new Date(),
-        timeRemaining: mockChallenge.duration * 60, // convert to seconds
+        timeRemaining: mockPaper.duration * 60,
         currentQuestion: 0,
         isSubmitted: false,
         flaggedQuestions: [],
@@ -162,11 +211,8 @@ export default function ChallengeAttemptPage() {
     }
 
     // Setup monitoring only after user accepts
-    if (hasAcceptedMonitoring) {
-      // Enter fullscreen
+    if (hasAcceptedTerms) {
       enterFullscreen();
-      
-      // Prevent tab switching
       setupTabSwitchPrevention();
     }
     
@@ -176,7 +222,7 @@ export default function ChallengeAttemptPage() {
       }
       exitFullscreen();
     };
-  }, [challengeId, hasAcceptedMonitoring]);
+  }, [paperId, hasAcceptedTerms]);
 
   // Timer
   useEffect(() => {
@@ -185,7 +231,7 @@ export default function ChallengeAttemptPage() {
         setTimeRemaining(prev => {
           const newTime = prev - 1;
           if (newTime <= 0) {
-            submitChallenge();
+            submitPaper();
             return 0;
           }
           
@@ -209,7 +255,6 @@ export default function ChallengeAttemptPage() {
   const enterFullscreen = () => {
     if (document?.documentElement?.requestFullscreen) {
       document.documentElement.requestFullscreen().catch(() => {
-        // Ignore errors if fullscreen request fails
         console.warn('Fullscreen request failed');
       });
       setIsFullscreen(true);
@@ -219,7 +264,6 @@ export default function ChallengeAttemptPage() {
   const exitFullscreen = () => {
     if (document?.exitFullscreen && document?.fullscreenElement) {
       document.exitFullscreen().catch(() => {
-        // Ignore errors if fullscreen exit fails
         console.warn('Fullscreen exit failed');
       });
     }
@@ -233,13 +277,13 @@ export default function ChallengeAttemptPage() {
 
   const setupTabSwitchPrevention = () => {
     const handleVisibilityChange = () => {
-      if (document?.hidden && !isSubmitted && hasAcceptedMonitoring) {
+      if (document?.hidden && !isSubmitted && hasAcceptedTerms) {
         setTabSwitchCount(prev => prev + 1);
         showViolationWarning('tab-switch');
         
         // Auto-submit after 3 tab switches
         if (tabSwitchCount >= 2) {
-          submitChallenge();
+          submitPaper();
         }
       }
     };
@@ -248,45 +292,23 @@ export default function ChallengeAttemptPage() {
       const isCurrentlyFullscreen = !!document?.fullscreenElement;
       setIsFullscreen(isCurrentlyFullscreen);
       
-      if (!isCurrentlyFullscreen && hasAcceptedMonitoring && !isSubmitted) {
+      // Only show fullscreen warning if not submitted and not in process of submitting
+      if (!isCurrentlyFullscreen && hasAcceptedTerms && !isSubmitted && timeRemaining > 0) {
         showViolationWarning('fullscreen-exit');
       }
     };
 
-    const handleWindowFocus = () => {
-      if (hasAcceptedMonitoring && !isSubmitted) {
-        // Window regained focus - could indicate window switching
-        showViolationWarning('window-switch');
-      }
-    };
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isSubmitted) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    // Prevent right-click context menu
-    const handleContextMenu = (e: MouseEvent) => {
-      if (hasAcceptedMonitoring) {
-        e.preventDefault();
-      }
-    };
-
-    // Prevent common keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (hasAcceptedMonitoring && !isSubmitted) {
-        // Prevent Alt+Tab, Ctrl+Tab, Cmd+Tab, F11, etc.
+      if (hasAcceptedTerms && !isSubmitted) {
         if (
           (e.altKey && e.key === 'Tab') ||
           (e.ctrlKey && e.key === 'Tab') ||
           (e.metaKey && e.key === 'Tab') ||
           e.key === 'F11' ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I') || // Dev tools
-          (e.ctrlKey && e.shiftKey && e.key === 'J') || // Console
-          (e.ctrlKey && e.key === 'u') || // View source
-          (e.metaKey && e.altKey && e.key === 'I') // Mac dev tools
+          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+          (e.ctrlKey && e.key === 'u') ||
+          (e.metaKey && e.altKey && e.key === 'I')
         ) {
           e.preventDefault();
           showViolationWarning('tab-switch');
@@ -297,26 +319,14 @@ export default function ChallengeAttemptPage() {
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', handleVisibilityChange);
       document.addEventListener('fullscreenchange', handleFullscreenChange);
-      document.addEventListener('contextmenu', handleContextMenu);
       document.addEventListener('keydown', handleKeyDown);
-    }
-    
-    if (typeof window !== 'undefined') {
-      window.addEventListener('focus', handleWindowFocus);
-      window.addEventListener('beforeunload', handleBeforeUnload);
     }
 
     return () => {
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        document.removeEventListener('contextmenu', handleContextMenu);
         document.removeEventListener('keydown', handleKeyDown);
-      }
-      
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('focus', handleWindowFocus);
-        window.removeEventListener('beforeunload', handleBeforeUnload);
       }
     };
   };
@@ -329,7 +339,7 @@ export default function ChallengeAttemptPage() {
         currentQuestion: currentQuestionIndex,
         lastSaved: new Date()
       };
-      localStorage.setItem(`attempt_${challengeId}`, JSON.stringify(updatedAttempt));
+      localStorage.setItem(`pyq_attempt_${paperId}`, JSON.stringify(updatedAttempt));
       lastSaveRef.current = new Date();
     }
   };
@@ -344,9 +354,7 @@ export default function ChallengeAttemptPage() {
         }
       };
       setAttemptData(updatedAttempt);
-      
-      // Save immediately when answer changes
-      localStorage.setItem(`attempt_${challengeId}`, JSON.stringify(updatedAttempt));
+      localStorage.setItem(`pyq_attempt_${paperId}`, JSON.stringify(updatedAttempt));
     }
   };
 
@@ -363,8 +371,19 @@ export default function ChallengeAttemptPage() {
     }
   };
 
-  const submitChallenge = () => {
+  const submitPaper = () => {
     if (attemptData) {
+      // Check if submitting early
+      const timeUsed = (paper?.duration || 0) * 60 - timeRemaining;
+      const totalTime = (paper?.duration || 0) * 60;
+      
+      if (timeRemaining > 300) { // More than 5 minutes remaining
+        const shouldSubmit = window.confirm(
+          `You still have ${formatTime(timeRemaining)} remaining. Are you sure you want to submit the paper?`
+        );
+        if (!shouldSubmit) return;
+      }
+      
       const finalAttempt = {
         ...attemptData,
         isSubmitted: true,
@@ -372,11 +391,13 @@ export default function ChallengeAttemptPage() {
       };
       setAttemptData(finalAttempt);
       setIsSubmitted(true);
-      localStorage.setItem(`attempt_${challengeId}`, JSON.stringify(finalAttempt));
+      localStorage.setItem(`pyq_attempt_${paperId}`, JSON.stringify(finalAttempt));
       
-      // Exit fullscreen and redirect to results page
-      exitFullscreen();
-      router.push(`/dashboard/challenge/result/${challengeId}`);
+      // Don't exit fullscreen immediately, let the navigation handle it
+      setTimeout(() => {
+        exitFullscreen();
+        router.push(`/dashboard/pyq/result/${paperId}`);
+      }, 100);
     }
   };
 
@@ -391,37 +412,10 @@ export default function ChallengeAttemptPage() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const calculateScore = () => {
-    if (!challenge || !attemptData) return { score: 0, total: 0, percentage: 0 };
-    
-    let score = 0;
-    let total = 0;
-    
-    challenge.questions.forEach(question => {
-      total += question.marks;
-      const userAnswer = attemptData.answers[question.id];
-      
-      if (question.type === "Single Choice" && userAnswer === question.correctAnswer) {
-        score += question.marks;
-      } else if (question.type === "Multiple Choice") {
-        const correct = Array.isArray(question.correctAnswer) ? question.correctAnswer : [];
-        const user = Array.isArray(userAnswer) ? userAnswer : [];
-        if (JSON.stringify(correct.sort()) === JSON.stringify(user.sort())) {
-          score += question.marks;
-        }
-      } else if ((question.type === "Numerical" || question.type === "Integer Type") && 
-                 Math.abs(parseFloat(userAnswer) - (question.correctAnswer as number)) < 0.01) {
-        score += question.marks;
-      }
-    });
-    
-    return { score, total, percentage: Math.round((score / total) * 100) };
-  };
-
   // Track current question visits
   useEffect(() => {
-    if (attemptData && challenge?.questions[currentQuestionIndex]) {
-      const currentQuestionId = challenge.questions[currentQuestionIndex].id;
+    if (attemptData && paper?.questions[currentQuestionIndex]) {
+      const currentQuestionId = paper.questions[currentQuestionIndex].id;
       setAttemptData(prev => {
         if (!prev) return null;
         const visitedQuestions = prev.visitedQuestions || [];
@@ -436,85 +430,71 @@ export default function ChallengeAttemptPage() {
         };
       });
     }
-  }, [currentQuestionIndex, challenge]);
+  }, [currentQuestionIndex, paper]);
 
-  // Auto-save every 30 seconds
-  useEffect(() => {
-    if (attemptData && !isSubmitted) {
-      const saveInterval = setInterval(() => {
-        localStorage.setItem(`attempt_${challengeId}`, JSON.stringify(attemptData));
-        lastSaveRef.current = new Date();
-      }, 30000);
-      
-      return () => clearInterval(saveInterval);
-    }
-  }, [attemptData, challengeId, isSubmitted]);
-
-  // Show monitoring warning before starting challenge
-  if (!challenge || !attemptData) {
+  // Show loading
+  if (!paper || !attemptData) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  // Show activity monitoring warning
-  if (!hasAcceptedMonitoring) {
+  // Show terms and conditions
+  if (!hasAcceptedTerms) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="max-w-2xl w-full">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              <FileText className="h-8 w-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl mb-2">Activity Monitoring Notice</CardTitle>
+            <CardTitle className="text-2xl mb-2">PYQ Paper Instructions</CardTitle>
             <CardDescription className="text-base">
-              This challenge requires strict monitoring to ensure fair assessment
+              {paper.name} - {paper.totalMarks} Marks
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <strong>Important:</strong> Your activity will be monitored during this challenge
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-blue-600" />
+                <span>Duration: {paper.duration} minutes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="h-4 w-4 text-green-600" />
+                <span>Total Marks: {paper.totalMarks}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-purple-600" />
+                <span>Questions: {paper.questions.length}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-orange-600" />
+                <span>Subjects: {paper.subjects.join(", ")}</span>
+              </div>
+            </div>
+            
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertTriangle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Important:</strong> This paper will run in fullscreen mode with activity monitoring
               </AlertDescription>
             </Alert>
             
-
-            {!isFullscreen && hasAcceptedMonitoring && (
-              <Alert className="mb-4 border-orange-200 bg-orange-50">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <AlertDescription className="text-orange-800">
-                  <strong>Notice:</strong> You have exited fullscreen mode. Please return to fullscreen for proper monitoring.
-                  <Button 
-                    size="sm" 
-                    className="ml-2" 
-                    onClick={enterFullscreen}
-                  >
-                    Enter Fullscreen
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-            
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Challenge Rules & Monitoring:</h3>
+              <h3 className="font-semibold text-lg">Paper Instructions:</h3>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span><strong>Fullscreen Mode:</strong> The challenge will run in fullscreen mode. Exiting fullscreen will be detected.</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span><strong>Fullscreen Mode:</strong> The paper will run in fullscreen mode. Exiting fullscreen will be detected.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span><strong>Tab Switching:</strong> Switching tabs or windows is strictly prohibited and will be tracked.</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span><strong>Tab Switching:</strong> Switching tabs or windows is prohibited and will be tracked.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span><strong>Auto-Submission:</strong> After 3 tab switches, your challenge will be automatically submitted.</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span><strong>Auto-Submission:</strong> After 3 violations, your paper will be automatically submitted.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span><strong>Time Limit:</strong> You have {Math.floor(challenge.duration)} minutes to complete this challenge.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                   <span><strong>Auto-Save:</strong> Your answers will be automatically saved every 30 seconds.</span>
                 </li>
               </ul>
@@ -524,10 +504,9 @@ export default function ChallengeAttemptPage() {
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-yellow-800 mb-1">Please Avoid Tab Switching</p>
+                  <p className="font-medium text-yellow-800 mb-1">Exam Conditions</p>
                   <p className="text-sm text-yellow-700">
-                    Any attempt to switch tabs, open new windows, or exit fullscreen will be recorded. 
-                    Multiple violations may result in automatic submission of your challenge.
+                    This paper simulates real exam conditions. Please ensure you have a stable internet connection and avoid any distractions.
                   </p>
                 </div>
               </div>
@@ -536,19 +515,20 @@ export default function ChallengeAttemptPage() {
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
-                onClick={() => router.push('/dashboard/challenge')}
+                onClick={() => router.push('/dashboard/pyq')}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={() => {
-                  setHasAcceptedMonitoring(true);
+                  setHasAcceptedTerms(true);
                   enterFullscreen();
                 }}
                 className="flex-1"
               >
-                I Understand, Start Challenge
+                <Play className="h-4 w-4 mr-2" />
+                Start Paper
               </Button>
             </div>
           </CardContent>
@@ -557,46 +537,7 @@ export default function ChallengeAttemptPage() {
     );
   }
 
-  if (showResults) {
-    const results = calculateScore();
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <Card className="text-center">
-            <CardHeader>
-              <div className="mx-auto w-16 h-16 bg-brand rounded-full flex items-center justify-center mb-4">
-                <Trophy className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-2xl mb-2">Challenge Complete!</CardTitle>
-              <CardDescription>
-                You scored {results.score} out of {results.total} marks ({results.percentage}%)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-brand mb-2">{results.percentage}%</p>
-                  <p className="text-muted-foreground">Overall Score</p>
-                </div>
-                
-                <div className="flex gap-4 mt-6">
-                  <Button onClick={() => router.push('/dashboard/challenge')} className="flex-1">
-                    Back to Challenges
-                  </Button>
-                  <Button variant="outline" onClick={() => window.print()} className="flex-1">
-                    Download Report
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const currentQuestion = challenge?.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / (challenge?.questions.length || 1)) * 100;
+  const currentQuestion = paper?.questions[currentQuestionIndex];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -613,11 +554,6 @@ export default function ChallengeAttemptPage() {
                 {violationType === 'fullscreen-exit' && 'Fullscreen Mode Exited!'}
                 {violationType === 'window-switch' && 'Window Switching Detected!'}
               </CardTitle>
-              <CardDescription className="text-red-700">
-                {violationType === 'tab-switch' && 'You attempted to switch tabs or use keyboard shortcuts. This action has been recorded.'}
-                {violationType === 'fullscreen-exit' && 'You have exited fullscreen mode. Please return to fullscreen immediately.'}
-                {violationType === 'window-switch' && 'Window switching has been detected. This action has been recorded.'}
-              </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -626,67 +562,39 @@ export default function ChallengeAttemptPage() {
                 </p>
                 {tabSwitchCount >= 2 && (
                   <p className="text-sm text-red-800 mt-1">
-                    <strong>Final Warning!</strong> One more violation will auto-submit your challenge.
+                    <strong>Final Warning!</strong> One more violation will auto-submit your paper.
                   </p>
                 )}
               </div>
               
-              <div className="flex gap-3">
-                {violationType === 'fullscreen-exit' ? (
-                  <>
-                    <Button 
-                      onClick={() => {
-                        enterFullscreen();
-                        setShowViolationOverlay(false);
-                      }}
-                      className="flex-1"
-                    >
-                      Return to Fullscreen
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => {
-                        submitChallenge();
-                        setShowViolationOverlay(false);
-                      }}
-                      className="flex-1"
-                    >
-                      Submit Challenge
-                    </Button>
-                  </>
-                ) : (
-                  <Button 
-                    variant="outline"
-                    onClick={() => setShowViolationOverlay(false)}
-                    className="w-full"
-                  >
-                    Continue Challenge
-                  </Button>
-                )}
-              </div>
+              <Button 
+                variant="outline"
+                onClick={() => setShowViolationOverlay(false)}
+                className="w-full"
+              >
+                Continue Paper
+              </Button>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Exam Header - Real exam interface style */}
+      {/* Exam Header */}
       <div className="bg-slate-900 text-white border-b shadow-lg sticky top-0 z-20">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            {/* Left section */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-sm font-bold">
-                  IIT
+                <div className="w-8 h-8 bg-brand rounded flex items-center justify-center text-sm font-bold text-black">
+                  PYQ
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold">{challenge?.title}</h1>
-                  <p className="text-xs text-slate-300">Computer Based Test</p>
+                  <h1 className="text-lg font-semibold">{paper?.name}</h1>
+                  <p className="text-xs text-slate-300">{paper?.exam} • {paper?.year}</p>
                 </div>
               </div>
             </div>
             
-            {/* Center section - Timer */}
             <div className="flex items-center gap-6">
               <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-2">
@@ -695,7 +603,7 @@ export default function ChallengeAttemptPage() {
                     <div className={`font-mono text-lg font-bold ${
                       timeRemaining <= 300 ? 'text-red-400' : 'text-green-400'
                     }`}>
-                      {Math.floor(timeRemaining / 3600)}:{Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0')}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                      {formatTime(timeRemaining)}
                     </div>
                     <div className="text-xs text-slate-400">Time Left</div>
                   </div>
@@ -703,7 +611,6 @@ export default function ChallengeAttemptPage() {
               </div>
             </div>
             
-            {/* Right section */}
             <div className="flex items-center gap-3">
               <Button 
                 variant="outline" 
@@ -718,19 +625,11 @@ export default function ChallengeAttemptPage() {
               <Button 
                 variant="destructive" 
                 size="sm"
-                onClick={submitChallenge}
+                onClick={submitPaper}
                 disabled={isSubmitted}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Submit Test
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-white hover:bg-slate-800"
-              >
-                <MoreVertical className="h-4 w-4" />
+                Submit Paper
               </Button>
             </div>
           </div>
@@ -742,7 +641,7 @@ export default function ChallengeAttemptPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-slate-600">
-              Question {currentQuestionIndex + 1} of {challenge?.questions.length || 0}
+              Question {currentQuestionIndex + 1} of {paper?.questions.length || 0}
             </span>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
@@ -764,6 +663,15 @@ export default function ChallengeAttemptPage() {
             <Button 
               variant="outline" 
               size="sm"
+              onClick={() => toggleFlag(currentQuestion?.id || "")}
+              className={attemptData?.flaggedQuestions.includes(currentQuestion?.id || "") ? "bg-yellow-100 border-yellow-300" : ""}
+            >
+              <Flag className="h-4 w-4" />
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
               onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
               disabled={currentQuestionIndex === 0}
             >
@@ -773,8 +681,8 @@ export default function ChallengeAttemptPage() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => setCurrentQuestionIndex(Math.min((challenge?.questions.length || 1) - 1, currentQuestionIndex + 1))}
-              disabled={currentQuestionIndex === (challenge?.questions.length || 1) - 1}
+              onClick={() => setCurrentQuestionIndex(Math.min((paper?.questions.length || 1) - 1, currentQuestionIndex + 1))}
+              disabled={currentQuestionIndex === (paper?.questions.length || 1) - 1}
             >
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -782,7 +690,7 @@ export default function ChallengeAttemptPage() {
         </div>
       </div>
 
-      {/* Main Content - Split Layout */}
+      {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Question Content */}
         <div className="flex-1 overflow-y-auto">
@@ -798,12 +706,12 @@ export default function ChallengeAttemptPage() {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-slate-600 mb-2">
-                        Ques. Type: {currentQuestion?.type === "Single Choice" ? "MCQ Single" : currentQuestion?.type === "Multiple Choice" ? "MCQ Multiple" : currentQuestion?.type === "Integer Type" ? "Integer" : "Numerical"}
-                      </div>
                       <h2 className="text-lg font-semibold text-slate-800 mb-2">
                         {currentQuestion?.title}
                       </h2>
+                      <div className="text-sm text-slate-600 mb-2">
+                        Ques. Type: {currentQuestion?.type === "Single Choice" ? "MCQ Single" : currentQuestion?.type === "Multiple Choice" ? "MCQ Multiple" : currentQuestion?.type === "Integer Type" ? "Integer" : "Numerical"}
+                      </div>
                       <div className="text-slate-600 leading-relaxed">
                         {currentQuestion?.description}
                       </div>
@@ -987,10 +895,13 @@ export default function ChallengeAttemptPage() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="text-orange-600 border-orange-200 hover:bg-orange-50"
+                  onClick={() => toggleFlag(currentQuestion?.id || "")}
+                  className={`text-orange-600 border-orange-200 hover:bg-orange-50 ${
+                    attemptData?.flaggedQuestions.includes(currentQuestion?.id || "") ? "bg-orange-50" : ""
+                  }`}
                 >
                   <Flag className="h-4 w-4 mr-2" />
-                  Mark for Review
+                  {attemptData?.flaggedQuestions.includes(currentQuestion?.id || "") ? "Unmark" : "Mark for Review"}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -1013,11 +924,11 @@ export default function ChallengeAttemptPage() {
                 </Button>
                 
                 <Button 
-                  onClick={() => setCurrentQuestionIndex(Math.min((challenge?.questions.length || 1) - 1, currentQuestionIndex + 1))}
-                  disabled={currentQuestionIndex === (challenge?.questions.length || 1) - 1}
+                  onClick={() => setCurrentQuestionIndex(Math.min((paper?.questions.length || 1) - 1, currentQuestionIndex + 1))}
+                  disabled={currentQuestionIndex === (paper?.questions.length || 1) - 1}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  {currentQuestionIndex === (challenge?.questions.length || 1) - 1 ? 'Review' : 'Save & Next'}
+                  {currentQuestionIndex === (paper?.questions.length || 1) - 1 ? 'Review' : 'Save & Next'}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
@@ -1031,36 +942,42 @@ export default function ChallengeAttemptPage() {
             {/* Summary Panel */}
             <Card className="mb-6">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Test Summary</CardTitle>
+                <CardTitle className="text-lg">Paper Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{challenge?.questions.length || 0}</div>
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="text-xl font-bold text-blue-600">{paper?.questions.length || 0}</div>
                     <div className="text-xs text-blue-600 font-medium">Total</div>
                   </div>
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {Object.keys(attemptData?.answers || {}).length}
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <div className="text-xl font-bold text-green-600">
+                      {Object.keys(attemptData?.answers || {}).filter(key => attemptData?.answers[key] !== "").length}
                     </div>
                     <div className="text-xs text-green-600 font-medium">Answered</div>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-600">
-                      {(challenge?.questions.length || 0) - Object.keys(attemptData?.answers || {}).length}
+                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                    <div className="text-xl font-bold text-orange-600">
+                      {attemptData?.flaggedQuestions.filter(id => !attemptData?.answers[id] || attemptData?.answers[id] === "").length || 0}
                     </div>
-                    <div className="text-xs text-slate-600 font-medium">Not Answered</div>
+                    <div className="text-xs text-orange-600 font-medium">Marked Only</div>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                    <div className="text-xl font-bold text-purple-600">
+                      {attemptData?.flaggedQuestions.filter(id => attemptData?.answers[id] && attemptData?.answers[id] !== "").length || 0}
+                    </div>
+                    <div className="text-xs text-purple-600 font-medium">Answered & Marked</div>
                   </div>
                 </div>
                 
                 <div className="pt-4 border-t">
                   <Button 
-                    onClick={submitChallenge}
+                    onClick={submitPaper}
                     disabled={isSubmitted}
                     className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3"
                     size="lg"
                   >
-                    Submit Test
+                    Submit Paper
                   </Button>
                   <p className="text-xs text-slate-500 text-center mt-2">
                     Make sure to review all questions before submitting
@@ -1072,11 +989,16 @@ export default function ChallengeAttemptPage() {
             {/* Question Palette */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Question Palette</CardTitle>
+                <CardTitle className="text-lg flex items-center justify-between">
+                  Question Palette
+                  <Badge variant="secondary" className="text-xs">
+                    {paper?.questions.length} Questions
+                  </Badge>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-5 gap-2 mb-4">
-                  {challenge?.questions.map((question, index) => {
+                  {paper?.questions.map((question, index) => {
                     const isAnswered = attemptData?.answers[question.id] && attemptData.answers[question.id] !== "";
                     const isMarked = attemptData?.flaggedQuestions.includes(question.id);
                     const isCurrent = index === currentQuestionIndex;

@@ -89,7 +89,7 @@ export default function QuestionPage() {
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("question")
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Mock login state
+  const [isLoggedIn, setIsLoggedIn] = useState(true) // Mock login state - user is logged in
   const [hasAttempted, setHasAttempted] = useState(false)
   const [attemptCount, setAttemptCount] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -98,6 +98,8 @@ export default function QuestionPage() {
   const isTabLocked = (tab: string) => {
     if (tab === "question") return false
     if (!isLoggedIn) return true
+    // Allow access to comments and community solutions for logged-in users
+    if (tab === "comments" || tab === "community") return false
     return !hasAttempted && !showAnswer
   }
 
