@@ -134,9 +134,9 @@ export default function ActivityHeatmap() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span>Activity Heatmap</span>
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
             <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
               <SelectTrigger className="w-24">
                 <SelectValue />
@@ -194,8 +194,8 @@ export default function ActivityHeatmap() {
             <span>More</span>
           </div>
           
-          <div className="w-full">
-            <div className="flex flex-col space-y-1">
+          <div className="w-full overflow-x-auto">
+            <div className="flex flex-col space-y-1 min-w-max">
               {/* Month labels */}
               <div className="flex space-x-0.5 mb-2">
                 {weeks.map((week, weekIndex) => {
@@ -230,7 +230,7 @@ export default function ActivityHeatmap() {
                           <Tooltip key={`${weekIndex}-${dayIndex}`}>
                             <TooltipTrigger>
                               <div
-                                className={`w-2 h-2 rounded-sm border cursor-pointer hover:ring-1 hover:ring-gray-300 ${
+                                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-sm border cursor-pointer hover:ring-1 hover:ring-gray-300 ${
                                   day.date ? getIntensityColor(day.level) : 'bg-transparent border-transparent'
                                 }`}
                               />

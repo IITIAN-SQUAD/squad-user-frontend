@@ -1,50 +1,50 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import MainLayout from '../components/layout/MainLayout';
-import { BookOpen, Users, Trophy, Clock, ArrowRight, Play, FileText } from 'lucide-react';
+import { BookOpen, Users, Trophy, Clock, ArrowRight, Play, FileText, BarChart2, Swords, RotateCcw, Brain, MessageSquare, Target, Award, Zap, CheckCircle } from 'lucide-react';
 
 export default function Home() {
   return (
     <MainLayout>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-white to-gray-50 py-20">
+      <section className="bg-brand-navy py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
                 Crack Your Dream Exam with <span className="text-brand">IITian Squad</span>
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+              <p className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed">
                 Join thousands of successful students who achieved their goals with expert guidance from India's top IITians. Your success story starts here.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
                   href="/dashboard" 
-                  className="bg-brand text-gray-900 px-6 py-3 rounded-md font-medium hover:bg-opacity-90 transition-colors text-center"
+                  className="bg-brand text-brand-navy px-8 py-4 rounded-lg font-semibold hover:bg-opacity-90 transition-colors text-center text-lg"
                 >
-                  Go to Dashboard
+                  Start Learning Now
                 </Link>
                 <Link 
                   href="/signup" 
-                  className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors text-center"
+                  className="bg-transparent border-2 border-brand text-brand px-8 py-4 rounded-lg font-semibold hover:bg-brand hover:text-brand-navy transition-colors text-center text-lg"
                 >
-                  Sign Up
+                  Sign Up Free
                 </Link>
               </div>
             </div>
             <div className="md:w-1/2">
               <div className="relative h-64 md:h-96 w-full">
                 {/* Platform Preview Mockup */}
-                <div className="bg-white rounded-2xl shadow-2xl p-6 h-full overflow-hidden border border-gray-200">
+                <div className="bg-white rounded-2xl shadow-2xl p-6 h-full overflow-hidden border border-brand/20">
                   {/* Header Bar */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                     <div className="flex items-center space-x-2">
                       <img src="/logo.svg" alt="Logo" className="h-6 w-6" />
-                      <span className="font-semibold text-gray-800">IITian Squad</span>
+                      <span className="font-semibold text-brand-navy">IITian Squad</span>
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-brand rounded-full"></div>
                       <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                     </div>
                   </div>
@@ -53,48 +53,48 @@ export default function Home() {
                   <div className="space-y-4">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
-                        <div className="text-xs text-blue-600 font-medium">Total Questions</div>
-                        <div className="text-lg font-bold text-blue-700">15,000+</div>
+                      <div className="bg-gradient-to-r from-brand/10 to-brand/20 p-3 rounded-lg border border-brand/30">
+                        <div className="text-xs text-brand-navy font-medium">Total Questions</div>
+                        <div className="text-lg font-bold text-brand-navy">15,000+</div>
                       </div>
-                      <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
-                        <div className="text-xs text-green-600 font-medium">All Exams</div>
-                        <div className="text-lg font-bold text-green-700">6 Types</div>
+                      <div className="bg-gradient-to-r from-brand-navy/10 to-brand-navy/20 p-3 rounded-lg border border-brand-navy/30">
+                        <div className="text-xs text-brand-navy font-medium">All Exams</div>
+                        <div className="text-lg font-bold text-brand-navy">6 Types</div>
                       </div>
                     </div>
                     
                     {/* Expert Section */}
-                    <div className="bg-gradient-to-r from-brand/10 to-brand/20 p-4 rounded-lg border border-brand/30">
+                    <div className="bg-gradient-to-r from-brand/20 to-brand/30 p-4 rounded-lg border border-brand/40">
                       <div className="flex items-center space-x-3 mb-2">
                         <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center">
-                          <span className="text-xs font-bold text-gray-800">IIT</span>
+                          <span className="text-xs font-bold text-brand-navy">IIT</span>
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-gray-800">Expert Solutions</div>
-                          <div className="text-xs text-gray-600">By IIT Alumni</div>
+                          <div className="text-sm font-semibold text-brand-navy">Expert Solutions</div>
+                          <div className="text-xs text-brand-navy/70">By IIT Alumni</div>
                         </div>
                       </div>
-                      <div className="text-xs text-gray-700">✓ Step-by-step explanations</div>
-                      <div className="text-xs text-gray-700">✓ Multiple approaches</div>
+                      <div className="text-xs text-brand-navy">✓ Step-by-step explanations</div>
+                      <div className="text-xs text-brand-navy">✓ Multiple approaches</div>
                     </div>
                     
                     {/* Question Preview */}
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-600">Mathematics • Competitive</span>
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Hard</span>
+                        <span className="text-xs font-medium text-brand-navy">Mathematics • Competitive</span>
+                        <span className="text-xs bg-brand text-brand-navy px-2 py-1 rounded">Hard</span>
                       </div>
                       <div className="text-xs text-gray-800 mb-2">Find the value of the integral...</div>
                       <div className="flex space-x-2">
-                        <div className="w-4 h-2 bg-gray-300 rounded"></div>
-                        <div className="w-6 h-2 bg-gray-300 rounded"></div>
-                        <div className="w-5 h-2 bg-gray-300 rounded"></div>
+                        <div className="w-4 h-2 bg-brand/40 rounded"></div>
+                        <div className="w-6 h-2 bg-brand/40 rounded"></div>
+                        <div className="w-5 h-2 bg-brand/40 rounded"></div>
                       </div>
                     </div>
                     
                     {/* Performance Graph */}
                     <div className="bg-white p-3 rounded-lg border border-gray-200">
-                      <div className="text-xs font-medium text-gray-600 mb-2">Weekly Progress</div>
+                      <div className="text-xs font-medium text-brand-navy mb-2">Weekly Progress</div>
                       <div className="flex items-end space-x-1 h-12">
                         <div className="w-3 bg-brand h-6 rounded-t"></div>
                         <div className="w-3 bg-brand h-8 rounded-t"></div>
@@ -121,8 +121,173 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-brand-navy mb-4">Everything You Need to Excel</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Comprehensive tools and features designed by IIT experts to accelerate your exam preparation
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Practice Questions */}
+            <div className="bg-gradient-to-br from-brand/5 to-brand/10 rounded-2xl p-8 border border-brand/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <BookOpen className="h-8 w-8 text-brand-navy" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">Smart Practice</h3>
+              <p className="text-gray-600 mb-4">15,000+ curated questions with detailed solutions from IIT experts. Practice by topic, difficulty, or exam pattern.</p>
+              <Link href="/dashboard" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                Start Practicing →
+              </Link>
+            </div>
+
+            {/* Analytics */}
+            <div className="bg-gradient-to-br from-brand-navy/5 to-brand-navy/10 rounded-2xl p-8 border border-brand-navy/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand-navy rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <BarChart2 className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">Performance Analytics</h3>
+              <p className="text-gray-600 mb-4">Track your progress with detailed analytics, identify weak areas, and get personalized recommendations.</p>
+              <Link href="/dashboard/analytics" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                View Analytics →
+              </Link>
+            </div>
+
+            {/* Challenges */}
+            <div className="bg-gradient-to-br from-brand/5 to-brand/10 rounded-2xl p-8 border border-brand/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <Swords className="h-8 w-8 text-brand-navy" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">Live Challenges</h3>
+              <p className="text-gray-600 mb-4">Compete with peers in timed challenges, mock tests, and leaderboard competitions.</p>
+              <Link href="/dashboard/challenge" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                Join Challenge →
+              </Link>
+            </div>
+
+            {/* PYQ Papers */}
+            <div className="bg-gradient-to-br from-brand-navy/5 to-brand-navy/10 rounded-2xl p-8 border border-brand-navy/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand-navy rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <FileText className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">PYQ Papers</h3>
+              <p className="text-gray-600 mb-4">Complete previous year question papers with exam-like interface and detailed analysis.</p>
+              <Link href="/dashboard/pyq" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                Attempt Papers →
+              </Link>
+            </div>
+
+            {/* AI Coaching */}
+            <div className="bg-gradient-to-br from-brand/5 to-brand/10 rounded-2xl p-8 border border-brand/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <Brain className="h-8 w-8 text-brand-navy" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">AI Coaching</h3>
+              <p className="text-gray-600 mb-4">Get personalized study plans, doubt resolution, and strategic guidance powered by AI.</p>
+              <Link href="/dashboard/coaching" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                Get Coaching →
+              </Link>
+            </div>
+
+            {/* Doubt Resolution */}
+            <div className="bg-gradient-to-br from-brand-navy/5 to-brand-navy/10 rounded-2xl p-8 border border-brand-navy/20 hover:shadow-lg transition-all duration-300">
+              <div className="bg-brand-navy rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                <MessageSquare className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-4">Instant Doubts</h3>
+              <p className="text-gray-600 mb-4">Get your doubts resolved instantly by IIT experts and connect with study groups.</p>
+              <Link href="/dashboard/doubts" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                Ask Doubts →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="py-20 bg-brand-navy">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-white mb-6">About IITian Squad</h2>
+              <p className="text-xl text-gray-200 mb-6">
+                Founded by IIT alumni with a mission to democratize quality education and make expert guidance accessible to every aspiring student across India.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-brand flex-shrink-0" />
+                  <span className="text-gray-200">Expert content created by IIT alumni and top educators</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-brand flex-shrink-0" />
+                  <span className="text-gray-200">Comprehensive coverage of JEE, NEET, and other competitive exams</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-brand flex-shrink-0" />
+                  <span className="text-gray-200">AI-powered personalized learning experience</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-brand flex-shrink-0" />
+                  <span className="text-gray-200">24/7 doubt resolution and community support</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-brand">50K+</div>
+                  <div className="text-sm text-gray-300">Students</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-brand">15K+</div>
+                  <div className="text-sm text-gray-300">Questions</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-brand">95%</div>
+                  <div className="text-sm text-gray-300">Success Rate</div>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="bg-gradient-to-br from-brand/20 to-brand/10 rounded-2xl p-8 border border-brand/30">
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-brand rounded-full w-12 h-12 flex items-center justify-center">
+                      <Trophy className="h-6 w-6 text-brand-navy" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-white">Expert Mentorship</h4>
+                      <p className="text-gray-300 text-sm">Learn from IIT toppers and industry experts</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-brand rounded-full w-12 h-12 flex items-center justify-center">
+                      <Target className="h-6 w-6 text-brand-navy" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-white">Focused Preparation</h4>
+                      <p className="text-gray-300 text-sm">Structured curriculum aligned with exam patterns</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-brand rounded-full w-12 h-12 flex items-center justify-center">
+                      <Zap className="h-6 w-6 text-brand-navy" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-white">Fast Results</h4>
+                      <p className="text-gray-300 text-sm">See improvement in your scores within weeks</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Exam Cards Section */}
-      <section className="py-16 bg-gray-50 overflow-hidden">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Exam</h2>
@@ -131,7 +296,133 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="relative mx-16 overflow-hidden rounded-2xl">
+          {/* Mobile: Grid Layout, Desktop: Scrolling Cards */}
+          <div className="block md:hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-full">
+                      <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-blue-600">JEE</div>
+                      <div className="text-xs text-gray-500">Main & Advanced</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Joint Entrance Examination</h3>
+                  <p className="text-gray-600 text-sm mb-3">Practice with 5000+ JEE questions covering Physics, Chemistry, and Mathematics</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">2000+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-full">
+                      <FileText className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-green-600">NEET</div>
+                      <div className="text-xs text-gray-500">UG</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">National Eligibility Entrance Test</h3>
+                  <p className="text-gray-600 text-sm mb-3">Master Biology, Physics, and Chemistry with comprehensive question bank</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">3000+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-full">
+                      <Trophy className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-purple-600">GATE</div>
+                      <div className="text-xs text-gray-500">All Branches</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Graduate Aptitude Test</h3>
+                  <p className="text-gray-600 text-sm mb-3">Comprehensive preparation for all GATE branches with expert solutions</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">4000+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-full">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-orange-600">CAT</div>
+                      <div className="text-xs text-gray-500">MBA Entrance</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Common Admission Test</h3>
+                  <p className="text-gray-600 text-sm mb-3">Excel in Quantitative Aptitude, Verbal Ability, and Logical Reasoning</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">2500+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-red-500 to-red-600 p-3 rounded-full">
+                      <Clock className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-red-600">UPSC</div>
+                      <div className="text-xs text-gray-500">Civil Services</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Union Public Service Commission</h3>
+                  <p className="text-gray-600 text-sm mb-3">Comprehensive preparation for Prelims and Mains with current affairs</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">3500+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/practice" className="group">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-full">
+                      <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-indigo-600">SSC</div>
+                      <div className="text-xs text-gray-500">All Exams</div>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Staff Selection Commission</h3>
+                  <p className="text-gray-600 text-sm mb-3">Practice for CGL, CHSL, MTS and other SSC examinations</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">2800+ Questions</span>
+                    <ArrowRight className="h-4 w-4 text-brand group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          {/* Desktop: Scrolling Animation */}
+          <div className="hidden md:block relative overflow-hidden rounded-2xl">
             <div className="flex gap-8 animate-scroll">
               {/* First set of cards */}
               <Link href="/practice" className="group flex-shrink-0 w-80">

@@ -149,7 +149,7 @@ export default function DashboardSidebar() {
   // Return desktop sidebar for larger screens, mobile sidebar for smaller screens
   return (
     <>
-      <aside className="hidden md:flex w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex-col h-screen">
+      <aside className="hidden md:flex w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex-col h-screen flex-shrink-0">
         <SidebarContent />
       </aside>
       <div className="md:hidden">

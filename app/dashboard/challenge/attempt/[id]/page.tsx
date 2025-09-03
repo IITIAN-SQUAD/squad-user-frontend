@@ -671,48 +671,48 @@ export default function ChallengeAttemptPage() {
 
       {/* Exam Header - Real exam interface style */}
       <div className="bg-slate-900 text-white border-b shadow-lg sticky top-0 z-20">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
+        <div className="px-2 sm:px-4 py-2 sm:py-3">
+          <div className="flex items-center justify-between gap-2">
             {/* Left section */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-sm font-bold">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                   IIT
                 </div>
-                <div>
-                  <h1 className="text-lg font-semibold">{challenge?.title}</h1>
-                  <p className="text-xs text-slate-300">Computer Based Test</p>
+                <div className="min-w-0">
+                  <h1 className="text-sm sm:text-lg font-semibold truncate">{challenge?.title}</h1>
+                  <p className="text-xs text-slate-300 hidden sm:block">Computer Based Test</p>
                 </div>
               </div>
             </div>
             
             {/* Center section - Timer */}
-            <div className="flex items-center gap-6">
-              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-400" />
+            <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
+              <div className="bg-slate-800 px-2 sm:px-4 py-1 sm:py-2 rounded-lg border border-slate-700">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
                   <div className="text-center">
-                    <div className={`font-mono text-lg font-bold ${
+                    <div className={`font-mono text-sm sm:text-lg font-bold ${
                       timeRemaining <= 300 ? 'text-red-400' : 'text-green-400'
                     }`}>
                       {Math.floor(timeRemaining / 3600)}:{Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0')}:{(timeRemaining % 60).toString().padStart(2, '0')}
                     </div>
-                    <div className="text-xs text-slate-400">Time Left</div>
+                    <div className="text-xs text-slate-400 hidden sm:block">Time Left</div>
                   </div>
                 </div>
               </div>
             </div>
             
             {/* Right section */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
               <Button 
                 variant="outline" 
                 size="sm"
-                className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700 px-2 sm:px-3"
                 onClick={autoSave}
               >
-                <Save className="h-4 w-4 mr-2" />
-                Save
+                <Save className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Save</span>
               </Button>
               
               <Button 
@@ -720,17 +720,17 @@ export default function ChallengeAttemptPage() {
                 size="sm"
                 onClick={submitChallenge}
                 disabled={isSubmitted}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700 px-2 sm:px-3"
               >
-                Submit Test
+                <span className="text-xs sm:text-sm">Submit</span>
               </Button>
               
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-white hover:bg-slate-800"
+                className="text-white hover:bg-slate-800 p-1 sm:p-2"
               >
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
@@ -738,36 +738,38 @@ export default function ChallengeAttemptPage() {
       </div>
       
       {/* Question Navigation Panel */}
-      <div className="bg-slate-50 border-b px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-slate-50 border-b px-2 sm:px-4 py-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <span className="text-sm font-medium text-slate-600">
               Question {currentQuestionIndex + 1} of {challenge?.questions.length || 0}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
               <Badge variant="outline" className="text-xs">
                 {currentQuestion?.subject}
               </Badge>
               <Badge variant="secondary" className="text-xs">
-                {currentQuestion?.type === "Single Choice" ? "Single Option" : 
-                 currentQuestion?.type === "Multiple Choice" ? "Multi Option" : 
+                {currentQuestion?.type === "Single Choice" ? "Single" : 
+                 currentQuestion?.type === "Multiple Choice" ? "Multi" : 
                  currentQuestion?.type === "Integer Type" ? "Integer" : 
                  currentQuestion?.type === "Numerical" ? "Numerical" : currentQuestion?.type}
               </Badge>
               <Badge variant="outline" className="text-xs">
-                Marks: {currentQuestion?.marks} Neg Marks: -{currentQuestion?.negativeMarks}
+                +{currentQuestion?.marks} -{currentQuestion?.negativeMarks}
               </Badge>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
               disabled={currentQuestionIndex === 0}
+              className="px-2 sm:px-3"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline ml-1">Prev</span>
             </Button>
             
             <Button 
@@ -775,36 +777,38 @@ export default function ChallengeAttemptPage() {
               size="sm"
               onClick={() => setCurrentQuestionIndex(Math.min((challenge?.questions.length || 1) - 1, currentQuestionIndex + 1))}
               disabled={currentQuestionIndex === (challenge?.questions.length || 1) - 1}
+              className="px-2 sm:px-3"
             >
-              <ArrowRight className="h-4 w-4" />
+              <span className="hidden sm:inline mr-1">Next</span>
+              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Main Content - Split Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Left Panel - Question Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             <Card className="border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="space-y-6">
                   {/* Question Header */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-blue-600 font-semibold text-sm">
+                  <div className="flex items-start gap-2 sm:gap-4">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-600 font-semibold text-xs sm:text-sm">
                         Q{currentQuestionIndex + 1}
                       </span>
                     </div>
-                    <div className="flex-1">
-                      <div className="text-sm text-slate-600 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs sm:text-sm text-slate-600 mb-2">
                         Ques. Type: {currentQuestion?.type === "Single Choice" ? "MCQ Single" : currentQuestion?.type === "Multiple Choice" ? "MCQ Multiple" : currentQuestion?.type === "Integer Type" ? "Integer" : "Numerical"}
                       </div>
-                      <h2 className="text-lg font-semibold text-slate-800 mb-2">
+                      <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-2 break-words">
                         {currentQuestion?.title}
                       </h2>
-                      <div className="text-slate-600 leading-relaxed">
+                      <div className="text-sm sm:text-base text-slate-600 leading-relaxed break-words">
                         {currentQuestion?.description}
                       </div>
                     </div>
@@ -820,11 +824,11 @@ export default function ChallengeAttemptPage() {
                         className="space-y-3"
                       >
                         {currentQuestion.options?.map((option, index) => (
-                          <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                            <RadioGroupItem value={option} id={`option-${index}`} className="mt-0.5" />
-                            <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-slate-700">
+                          <div key={index} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                            <RadioGroupItem value={option} id={`option-${index}`} className="mt-0.5 flex-shrink-0" />
+                            <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-slate-700 min-w-0">
                               <span className="font-medium text-slate-600 mr-2">({String.fromCharCode(65 + index)})</span>
-                              {option}
+                              <span className="break-words">{option}</span>
                             </Label>
                           </div>
                         ))}
@@ -841,7 +845,7 @@ export default function ChallengeAttemptPage() {
                           const isChecked = currentAnswers.includes(option);
                           
                           return (
-                            <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                            <div key={index} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
                               <Checkbox
                                 id={`option-${index}`}
                                 checked={isChecked}
@@ -851,11 +855,11 @@ export default function ChallengeAttemptPage() {
                                     : currentAnswers.filter((a: string) => a !== option);
                                   handleAnswerChange(currentQuestion.id, newAnswers);
                                 }}
-                                className="mt-0.5"
+                                className="mt-0.5 flex-shrink-0"
                               />
-                              <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-slate-700">
+                              <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-slate-700 min-w-0">
                                 <span className="font-medium text-slate-600 mr-2">({String.fromCharCode(65 + index)})</span>
-                                {option}
+                                <span className="break-words">{option}</span>
                               </Label>
                             </div>
                           );
@@ -869,13 +873,13 @@ export default function ChallengeAttemptPage() {
                       <h3 className="font-medium text-slate-700 mb-3">
                         Enter your answer:
                       </h3>
-                      <div className="max-w-md">
+                      <div className="w-full max-w-md">
                         <Input
                           type="text"
                           placeholder={currentQuestion.type === "Integer Type" ? "Enter integer" : "Enter number"}
                           value={attemptData?.answers[currentQuestion.id] || ""}
                           onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                          className="text-2xl p-4 text-center font-mono mb-4"
+                          className="text-lg sm:text-2xl p-3 sm:p-4 text-center font-mono mb-4 w-full"
                           readOnly
                         />
                         <p className="text-xs text-slate-500 mb-4 text-center">
@@ -883,8 +887,8 @@ export default function ChallengeAttemptPage() {
                         </p>
                         
                         {/* On-Screen Keyboard */}
-                        <div className="bg-slate-50 p-4 rounded-lg border">
-                          <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="bg-slate-50 p-3 sm:p-4 rounded-lg border">
+                          <div className="grid grid-cols-3 gap-1 sm:gap-2 mb-2 sm:mb-3">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                               <Button
                                 key={num}
@@ -894,13 +898,13 @@ export default function ChallengeAttemptPage() {
                                   const currentValue = attemptData?.answers[currentQuestion.id] || "";
                                   handleAnswerChange(currentQuestion.id, currentValue + num.toString());
                                 }}
-                                className="h-12 text-lg font-mono hover:bg-blue-50"
+                                className="h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-blue-50"
                               >
                                 {num}
                               </Button>
                             ))}
                           </div>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-3 gap-1 sm:gap-2">
                             <Button
                               variant="outline"
                               size="lg"
@@ -914,7 +918,7 @@ export default function ChallengeAttemptPage() {
                                   handleAnswerChange(currentQuestion.id, currentValue.substring(1));
                                 }
                               }}
-                              className="h-12 text-lg font-mono hover:bg-red-50"
+                              className="h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-red-50"
                             >
                               +/-
                             </Button>
@@ -925,7 +929,7 @@ export default function ChallengeAttemptPage() {
                                 const currentValue = attemptData?.answers[currentQuestion.id] || "";
                                 handleAnswerChange(currentQuestion.id, currentValue + "0");
                               }}
-                              className="h-12 text-lg font-mono hover:bg-blue-50"
+                              className="h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-blue-50"
                             >
                               0
                             </Button>
@@ -939,7 +943,7 @@ export default function ChallengeAttemptPage() {
                                     handleAnswerChange(currentQuestion.id, currentValue + ".");
                                   }
                                 }}
-                                className="h-12 text-lg font-mono hover:bg-green-50"
+                                className="h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-green-50"
                               >
                                 .
                               </Button>
@@ -952,7 +956,7 @@ export default function ChallengeAttemptPage() {
                                   const currentValue = attemptData?.answers[currentQuestion.id] || "";
                                   handleAnswerChange(currentQuestion.id, currentValue.slice(0, -1));
                                 }}
-                                className="h-12 text-lg font-mono hover:bg-orange-50"
+                                className="h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-orange-50"
                               >
                                 ⌫
                               </Button>
@@ -967,7 +971,7 @@ export default function ChallengeAttemptPage() {
                                   const currentValue = attemptData?.answers[currentQuestion.id] || "";
                                   handleAnswerChange(currentQuestion.id, currentValue.slice(0, -1));
                                 }}
-                                className="w-full h-12 text-lg font-mono hover:bg-orange-50"
+                                className="w-full h-10 sm:h-12 text-sm sm:text-lg font-mono hover:bg-orange-50"
                               >
                                 ⌫ Backspace
                               </Button>
@@ -982,8 +986,8 @@ export default function ChallengeAttemptPage() {
             </Card>
             
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-6 mt-8 border-t border-slate-200">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-4 sm:pt-6 mt-6 sm:mt-8 border-t border-slate-200 gap-3 sm:gap-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -1002,11 +1006,12 @@ export default function ChallengeAttemptPage() {
                 </Button>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
                   disabled={currentQuestionIndex === 0}
+                  className="flex-1 sm:flex-none"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Previous
@@ -1015,7 +1020,7 @@ export default function ChallengeAttemptPage() {
                 <Button 
                   onClick={() => setCurrentQuestionIndex(Math.min((challenge?.questions.length || 1) - 1, currentQuestionIndex + 1))}
                   disabled={currentQuestionIndex === (challenge?.questions.length || 1) - 1}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none"
                 >
                   {currentQuestionIndex === (challenge?.questions.length || 1) - 1 ? 'Review' : 'Save & Next'}
                   <ArrowRight className="h-4 w-4 ml-2" />
@@ -1026,7 +1031,7 @@ export default function ChallengeAttemptPage() {
         </div>
 
         {/* Right Panel - Question Palette */}
-        <div className="w-80 bg-white border-l border-slate-200 overflow-y-auto">
+        <div className="hidden lg:block w-80 bg-white border-l border-slate-200 overflow-y-auto">
           <div className="p-4">
             {/* Summary Panel */}
             <Card className="mb-6">

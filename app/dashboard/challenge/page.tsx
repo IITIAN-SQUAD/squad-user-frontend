@@ -304,19 +304,19 @@ export default function ChallengePage() {
       <div className="p-4 sm:p-6 space-y-6 max-w-full overflow-hidden">
         <h1 className="text-2xl font-bold tracking-tight">Challenges</h1>
         
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-4">
-            <Card className="p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+            <Card className="p-4 w-full sm:w-auto">
               <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
+                <Trophy className="h-5 w-5 text-primary flex-shrink-0" />
                 <div>
                   <p className="text-2xl font-bold">24th</p>
                   <p className="text-sm text-muted-foreground">Your Rank</p>
                 </div>
               </div>
             </Card>
-            <Link href="/dashboard/challenge/create">
-              <Button>
+            <Link href="/dashboard/challenge/create" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Challenge
               </Button>
@@ -325,18 +325,18 @@ export default function ChallengePage() {
         </div>
         
         <Tabs defaultValue="upcoming" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="public">Public</TabsTrigger>
-                <TabsTrigger value="created">Created by Me</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
+                <TabsTrigger value="public" className="text-xs sm:text-sm">Public</TabsTrigger>
+                <TabsTrigger value="created" className="text-xs sm:text-sm">Created by Me</TabsTrigger>
+                <TabsTrigger value="completed" className="text-xs sm:text-sm">Completed</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upcoming" className="space-y-6">
-                <div className="mb-4 flex justify-between items-center">
+                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <h3 className="text-lg font-semibold">Scheduled Challenges</h3>
                   <Select value={upcomingSort} onValueChange={setUpcomingSort}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full sm:w-48">
                       <ArrowUpDown className="h-4 w-4 mr-2" />
                       <SelectValue />
                     </SelectTrigger>
@@ -347,10 +347,10 @@ export default function ChallengePage() {
                   </Select>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   <Card className="border-dashed border-2 hover:border-brand transition-colors cursor-pointer">
                     <Link href="/dashboard/challenge/create">
-                      <CardContent className="flex flex-col items-center justify-center p-6 text-center min-h-[200px]">
+                      <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 text-center min-h-[200px]">
                         <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-4">
                           <Plus className="h-6 w-6 text-brand" />
                         </div>
@@ -435,10 +435,10 @@ export default function ChallengePage() {
               </TabsContent>
               
               <TabsContent value="public" className="space-y-6">
-                <div className="mb-4 flex justify-between items-center">
+                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <h3 className="text-lg font-semibold">Public Challenges</h3>
                   <Select value={publicSort} onValueChange={setPublicSort}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full sm:w-48">
                       <ArrowUpDown className="h-4 w-4 mr-2" />
                       <SelectValue />
                     </SelectTrigger>
@@ -450,7 +450,7 @@ export default function ChallengePage() {
                   </Select>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {paginateItems(sortPublic(publicChallenges), publicPage).map((challenge) => (
                     <Card key={challenge.id} className="hover:shadow-md transition-shadow">
                       <CardHeader>

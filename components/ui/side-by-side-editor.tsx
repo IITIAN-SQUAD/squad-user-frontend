@@ -74,45 +74,45 @@ export default function SideBySideEditor({
   };
 
   return (
-    <div className="h-[80vh] flex gap-6 p-6">
+    <div className="min-h-[80vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6 w-full overflow-x-hidden">
       {/* Left Side - Question */}
-      <div className="w-1/2 flex flex-col">
+      <div className="w-full lg:w-1/2 flex flex-col">
         <Card className="flex-1 flex flex-col max-h-full">
           <CardHeader className="pb-4 flex-shrink-0">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="secondary">{question.subject}</Badge>
               <Badge variant="outline">{question.topic}</Badge>
             </div>
-            <CardTitle className="text-xl leading-tight">{question.title}</CardTitle>
+            <CardTitle className="text-lg lg:text-xl leading-tight break-words">{question.title}</CardTitle>
             
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
+                <Avatar className="h-6 w-6 flex-shrink-0">
                   <AvatarImage src={question.author.avatar} />
                   <AvatarFallback className="text-xs">
                     {question.author.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-medium">{question.author.name}</span>
+                <span className="font-medium truncate">{question.author.name}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <User className="h-3 w-3" />
                 <span>{question.author.xp} XP</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <Clock className="h-3 w-3" />
-                <span>{formatDistanceToNow(question.createdAt, { addSuffix: true })}</span>
+                <span className="truncate">{formatDistanceToNow(question.createdAt, { addSuffix: true })}</span>
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="flex-1 overflow-y-auto min-h-0">
-            <div className="prose prose-sm max-w-none mb-4">
+            <div className="prose prose-sm max-w-none mb-4 break-words">
               <div dangerouslySetInnerHTML={{ __html: renderQuestionContent(question.content) }} />
             </div>
 
             {question.hasImage && question.imageUrl && (
-              <div className="mb-4">
+              <div className="mb-4 overflow-hidden">
                 <img 
                   src={question.imageUrl} 
                   alt="Question illustration" 
@@ -122,8 +122,8 @@ export default function SideBySideEditor({
             )}
 
             {question.tags.length > 0 && (
-              <div className="flex items-center gap-2 mt-4">
-                <Tag className="h-4 w-4 text-muted-foreground" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-4">
+                <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex gap-1 flex-wrap">
                   {question.tags.map((tag) => (
                     <Badge key={tag} variant="outline" className="text-xs">
@@ -138,14 +138,14 @@ export default function SideBySideEditor({
       </div>
 
       {/* Right Side - Editor */}
-      <div className="w-1/2 flex flex-col">
+      <div className="w-full lg:w-1/2 flex flex-col">
         <Card className="flex-1 flex flex-col max-h-full">
           <CardHeader className="pb-4 flex-shrink-0">
-            <CardTitle className="text-xl">{title}</CardTitle>
+            <CardTitle className="text-lg lg:text-xl break-words">{title}</CardTitle>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <MarkdownEditor
                 value={value}
                 onChange={onChange}
@@ -159,14 +159,14 @@ export default function SideBySideEditor({
               />
             </div>
 
-            <div className="flex justify-end gap-3 mt-4 pt-4 border-t flex-shrink-0">
-              <Button variant="outline" onClick={onCancel}>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t flex-shrink-0">
+              <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto">
                 Cancel
               </Button>
               <Button 
                 onClick={onSubmit}
                 disabled={!value.trim() || isSubmitting}
-                className="bg-brand text-gray-900 hover:bg-brand/90"
+                className="bg-brand text-gray-900 hover:bg-brand/90 w-full sm:w-auto"
               >
                 {isSubmitting ? "Submitting..." : submitLabel}
               </Button>

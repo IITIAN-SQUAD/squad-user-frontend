@@ -155,71 +155,110 @@ export default function MarkdownEditor({
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
-        <div className="flex items-center gap-1 flex-wrap">
-          {toolbarButtons.map((button, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              size="sm"
-              onClick={button.action}
-              title={button.title}
-              className="h-8 w-8 p-0"
-            >
-              <button.icon className="h-4 w-4" />
-            </Button>
-          ))}
-          
-          <div className="h-4 w-px bg-gray-300 mx-2" />
-          
+      <div className="flex flex-wrap items-center gap-1 sm:gap-2 p-2 sm:p-3 bg-gray-50 rounded-lg border overflow-x-auto">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
-            onClick={() => insertText('\n```\n', '\n```\n', 'code block')}
-            title="Code Block"
-            className="text-xs px-2 h-8"
+            onClick={() => insertText('**', '**', 'bold text')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
           >
-            Code Block
+            <Bold className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          
           <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('*', '*', 'italic text')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <Italic className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('`', '`', 'code')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <Code className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+        </div>
+
+        <div className="w-px h-4 sm:h-6 bg-gray-300 flex-shrink-0" />
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('- ', '', 'list item')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <List className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('1. ', '', 'numbered item')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <ListOrdered className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('> ', '', 'quote')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <Quote className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+        </div>
+
+        <div className="w-px h-4 sm:h-6 bg-gray-300 flex-shrink-0" />
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('[', '](url)', 'link text')}
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+          >
+            <Link className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+          <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            title="Upload Image"
-            className="h-8 px-2"
+            className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
           >
-            <Upload className="h-4 w-4 mr-1" />
-            Image
+            <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Button
-            variant={!isPreview ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsPreview(false)}
-            className="h-8"
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Write
-          </Button>
-          <Button
-            variant={isPreview ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsPreview(true)}
-            className="h-8"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            Preview
-          </Button>
-        </div>
+        <div className="flex-1 min-w-0" />
+
+        <Button
+          type="button"
+          variant={isPreview ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setIsPreview(!isPreview)}
+          className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 flex-shrink-0"
+        >
+          {isPreview ? <Edit className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
+          <span className="hidden sm:inline">{isPreview ? 'Write' : 'Preview'}</span>
+        </Button>
       </div>
 
       {/* Editor/Preview Area */}
-      <div className="border rounded-md flex flex-col" style={{ minHeight, maxHeight: "none" }}>
+      <div className="border rounded-md flex flex-col w-full overflow-hidden" style={{ minHeight, maxHeight: "none" }}>
         {!isPreview ? (
           <>
             <Textarea
@@ -227,44 +266,70 @@ export default function MarkdownEditor({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="font-mono text-sm resize-none border-0 focus-visible:ring-0 p-4 flex-1"
-              style={{ minHeight: "250px" }}
+              className="flex-1 resize-none border-0 focus:ring-0 rounded-b-none w-full"
+              style={{ minHeight: `calc(${minHeight} - 2rem)` }}
             />
             
-            {/* Show uploaded image in editor mode */}
+            {/* Image Upload Area */}
             {selectedImage && (
-              <div className="border-t p-4 bg-gray-50">
-                <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                  <ImageIcon className="h-4 w-4" />
-                  <span>Uploaded Image Preview:</span>
+              <div className="border-t p-2 sm:p-4 bg-gray-50 max-h-48 sm:max-h-64 overflow-y-auto">
+                <div className="flex flex-col gap-2 sm:gap-4">
+                  <div className="w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                      <span className="text-sm font-medium text-gray-700">Uploaded Image</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Size:</span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onImageSizeChange?.(Math.max(200, imageSize - 50))}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="text-xs text-gray-600 min-w-[3rem] text-center">{imageSize}px</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onImageSizeChange?.(Math.min(600, imageSize + 50))}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={onImageRemove}
+                          className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="border rounded-md p-2 bg-white overflow-hidden">
+                      <img
+                        src={URL.createObjectURL(selectedImage)}
+                        alt="Uploaded preview"
+                        style={{ width: `${Math.min(imageSize, 300)}px`, maxWidth: '100%' }}
+                        className="rounded"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <img 
-                  src={URL.createObjectURL(selectedImage)} 
-                  alt="Uploaded preview" 
-                  style={{ width: `${imageSize}px`, height: 'auto' }}
-                  className="rounded border bg-white"
-                />
               </div>
             )}
           </>
         ) : (
-          <div className="p-4 flex-1">
-            <div 
-              className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ 
-                __html: `<p class="mb-2">${renderMarkdown(value)}</p>` 
-              }}
-            />
-            {selectedImage && (
-              <div className="mt-4">
-                <img 
-                  src={URL.createObjectURL(selectedImage)} 
-                  alt="Preview" 
-                  style={{ width: `${imageSize}px`, height: 'auto' }}
-                  className="rounded border"
-                />
-              </div>
-            )}
+          <div 
+            className="flex-1 p-2 sm:p-4 prose prose-sm max-w-none overflow-y-auto w-full"
+            style={{ minHeight: `calc(${minHeight} - 2rem)`, maxHeight: "400px" }}
+          >
+            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(value) }} />
           </div>
         )}
       </div>
