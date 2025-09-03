@@ -465,7 +465,7 @@ export default function BlogDetailPage() {
   // Convert markdown-like content to JSX
   const renderContent = (content: string) => {
     const lines = content.trim().split('\n');
-    const elements: JSX.Element[] = [];
+    const elements: React.ReactElement[] = [];
     let currentIndex = 0;
 
     lines.forEach((line, index) => {
