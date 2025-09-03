@@ -59,79 +59,77 @@ export default function PerformanceAnalytics() {
   const previousMonth = performanceData[performanceData.length - 2];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Overall Accuracy</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold">{currentMonth.accuracy}%</p>
+                  <p className="text-xl sm:text-2xl font-bold">{currentMonth.accuracy}%</p>
                   {getTrendIcon(currentMonth.accuracy, previousMonth.accuracy)}
                 </div>
-                <p className={`text-xs ${getTrendColor(currentMonth.accuracy, previousMonth.accuracy)}`}>
-                  {currentMonth.accuracy > previousMonth.accuracy ? '+' : ''}
-                  {currentMonth.accuracy - previousMonth.accuracy}% from last month
-                </p>
               </div>
-              <Target className="h-8 w-8 text-blue-600" />
+              <Target className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground flex-shrink-0" />
             </div>
+            <Progress value={currentMonth.accuracy} className="mt-3" />
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Avg Speed</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold">{currentMonth.speed}s</p>
+                  <p className="text-xl sm:text-2xl font-bold">{currentMonth.speed}s</p>
                   {getTrendIcon(previousMonth.speed, currentMonth.speed)} {/* Reverse for speed */}
                 </div>
-                <p className={`text-xs ${getTrendColor(previousMonth.speed, currentMonth.speed)}`}>
-                  {currentMonth.speed < previousMonth.speed ? '-' : '+'}
-                  {Math.abs(currentMonth.speed - previousMonth.speed)}s from last month
-                </p>
               </div>
-              <Clock className="h-8 w-8 text-green-600" />
+              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground flex-shrink-0" />
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Per question
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Questions Solved</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold">{currentMonth.questions}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{currentMonth.questions}</p>
                   {getTrendIcon(currentMonth.questions, previousMonth.questions)}
                 </div>
-                <p className={`text-xs ${getTrendColor(currentMonth.questions, previousMonth.questions)}`}>
-                  +{currentMonth.questions - previousMonth.questions} from last month
-                </p>
               </div>
-              <Award className="h-8 w-8 text-purple-600" />
+              <Award className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground flex-shrink-0" />
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Total attempts
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Consistency Score</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold">8.4</p>
+                  <p className="text-xl sm:text-2xl font-bold">8.4</p>
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </div>
-                <p className="text-xs text-green-600">+0.3 from last month</p>
               </div>
               <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
                 <span className="text-orange-600 font-bold text-sm">C</span>
               </div>
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Current streak
             </div>
           </CardContent>
         </Card>
@@ -190,24 +188,22 @@ export default function PerformanceAnalytics() {
               <CardContent className="space-y-4">
                 {difficultyData.map((level) => (
                   <div key={level.name} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 min-w-0 flex-1">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
                           style={{ backgroundColor: level.color }}
                         />
                         <span className="font-medium">{level.name}</span>
                       </div>
-                      <div className="text-right">
-                        <Badge variant="outline" style={{ color: level.color }}>
-                          {level.accuracy}%
-                        </Badge>
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-bold">{level.accuracy}%</div>
+                        <div className="text-xs text-muted-foreground">
+                          {level.correct}/{level.attempted}
+                        </div>
                       </div>
                     </div>
                     <Progress value={level.accuracy} className="h-2" />
-                    <div className="text-sm text-muted-foreground">
-                      {level.correct}/{level.attempted} questions correct
-                    </div>
                   </div>
                 ))}
               </CardContent>
