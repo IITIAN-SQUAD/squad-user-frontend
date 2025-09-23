@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { Menu, X, ChevronDown, User, BarChart2, Trophy, BookOpen, Swords, FileText, RotateCcw, Brain, MessageSquare } from 'lucide-react';
+import { Menu, X, ChevronDown, User, BarChart2, Trophy, BookOpen, Swords, FileText, RotateCcw, Brain, MessageSquare, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Header() {
