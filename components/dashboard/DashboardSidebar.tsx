@@ -13,7 +13,8 @@ import {
   ChevronRight,
   RotateCcw,
   Brain,
-  MessageSquare
+  MessageSquare,
+  GraduationCap
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";

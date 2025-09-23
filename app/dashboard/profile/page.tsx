@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle, Clock, Eye, Flag, Shield, ExternalLink, Mail, Timer } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Eye, Flag, Shield, ExternalLink, Mail, Timer, GraduationCap, Users, Calendar, Star } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -72,6 +72,7 @@ export default function ProfilePage() {
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
+            <TabsTrigger value="enrollments">My Enrollments</TabsTrigger>
             <TabsTrigger value="account">Account Settings</TabsTrigger>
             <TabsTrigger value="reports">Report Management</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
@@ -171,6 +172,59 @@ export default function ProfilePage() {
               <CardFooter className="flex justify-end">
                 <Button>Save Changes</Button>
               </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="enrollments">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Enrollments</CardTitle>
+                <CardDescription>
+                  Manage your coaching institute enrollments and access your learning dashboard.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Institute</TableHead>
+                      <TableHead>Batch</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">Aakash Institute</TableCell>
+                      <TableCell>JEE Advanced Batch A</TableCell>
+                      <TableCell><Badge className="bg-green-100 text-green-800">Active</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <Link href="/dashboard/coaching/1">
+                          <Button variant="outline" size="sm">Enter Dashboard</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Allen Career Institute</TableCell>
+                      <TableCell>NEET Foundation</TableCell>
+                      <TableCell><Badge className="bg-green-100 text-green-800">Active</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <Link href="/dashboard/coaching/2">
+                          <Button variant="outline" size="sm">Enter Dashboard</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Resonance Eduventures</TableCell>
+                      <TableCell>Board Preparation</TableCell>
+                      <TableCell><Badge>Completed</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" disabled>View Dashboard</Button>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
             </Card>
           </TabsContent>
           

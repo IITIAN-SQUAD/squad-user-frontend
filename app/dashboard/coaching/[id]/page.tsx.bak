@@ -1,0 +1,1637 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import DashboardLayout from '../../../../components/layout/DashboardLayout';
+
+// UI Components
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Icons
+import { 
+  Calendar, 
+  CreditCard, 
+  Download, 
+  Eye, 
+  FileText, 
+  Loader2,
+  Search, 
+  Smartphone, 
+  X
+} from 'lucide-react';
+
+// Hooks & Utils
+import { useNotification } from '@/hooks/useNotification';
+
+// Types
+interface Notice { 
+  id: string; 
+  title: string; 
+  content: string; 
+  type: 'global' | 'batch'; 
+  priority: 'low' | 'medium' | 'high'; 
+  publishedAt: string; 
+  isRead: boolean; 
+  attachments?: string[]; 
+}
+
+interface TestResult { 
+  id: string; 
+  testName: string; 
+  subject: string; 
+  totalMarks: number; 
+  obtainedMarks: number; 
+  percentage: number; 
+  rank: number; 
+  conductedAt: string; 
+  status: 'completed' | 'pending_result'; 
+}
+
+interface UpcomingTest { 
+  id: string; 
+  testName: string; 
+  subject: string; 
+  scheduledAt: string; 
+  duration: number; 
+  totalMarks: number; 
+  syllabus: string[]; 
+  isRegistered: boolean; 
+}
+
+interface StudyMaterial { 
+  id: string;
+  title: string;
+  subject: string;
+  type: 'pdf' | 'video' | 'youtube' | 'notes' | 'assignment';
+  url: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  fileSize: string;
+  downloads: number;
+  isNew: boolean;
+  description?: string;
+  duration?: string;
+  thumbnail?: string;
+}
+
+interface FeeInstallment {
+  id: string;
+  installmentNumber: number;
+  amount: number;
+  dueDate: string;
+  status: 'paid' | 'pending' | 'overdue';
+  paidDate?: string;
+  transactionId?: string;
+}
+
+// Mock Data
+const mockNotices: Notice[] = [
+  { 
+    id: '1', 
+    title: 'Important: Mock Test Schedule Updated', 
+    content: 'The mock test scheduled for January 25th has been rescheduled to January 27th due to unavoidable circumstances. Please make a note of this change in your calendars. The test will cover all topics from the syllabus we have covered so far.', 
+    type: 'batch', 
+    priority: 'high', 
+    publishedAt: '2024-01-18T09:00:00Z', 
+    isRead: false, 
+    attachments: ['revised_schedule.pdf'] 
+  }, 
+  { 
+    id: '2', 
+    title: 'New Study Material Available', 
+    content: 'Physics chapter on Electromagnetic Induction notes and practice problems have been uploaded to the study materials section. Please go through them before the next class.', 
+    type: 'batch', 
+    priority: 'medium', 
+    publishedAt: '2024-01-17T14:30:00Z', 
+    isRead: true 
+  },
+  { 
+    id: '3', 
+    title: 'Holiday Announcement - Republic Day', 
+    content: 'The coaching center will remain closed on January 26th, 2024 on account of Republic Day. Regular classes will resume from January 27th.', 
+    type: 'global', 
+    priority: 'medium', 
+    publishedAt: '2024-01-16T11:15:00Z', 
+    isRead: true 
+  },
+  { 
+    id: '4', 
+    title: 'Weekend Doubt Clearing Session', 
+    content: 'A special doubt clearing session has been scheduled for this Saturday from 10 AM to 1 PM. Please come prepared with your doubts from the Mechanics and Thermodynamics chapters.', 
+    type: 'batch', 
+    priority: 'high', 
+    publishedAt: '2024-01-15T16:45:00Z', 
+    isRead: false,
+    attachments: ['doubt_session_topics.pdf']
+  },
+  { 
+    id: '5', 
+    title: 'Parent-Teacher Meeting', 
+    content: 'The quarterly parent-teacher meeting is scheduled for January 30th, 2024. Please ask your parents to attend this important meeting to discuss your progress.', 
+    type: 'global', 
+    priority: 'high', 
+    publishedAt: '2024-01-14T10:20:00Z', 
+    isRead: true 
+  },
+  { 
+    id: '6', 
+    title: 'New Batch Timing Update', 
+    content: 'Starting next week, the evening batch timing has been changed from 4 PM to 4:30 PM. This change is being made to accommodate students coming from school.', 
+    type: 'batch', 
+    priority: 'medium', 
+    publishedAt: '2024-01-13T15:10:00Z', 
+    isRead: false 
+  },
+  { 
+    id: '7', 
+    title: 'Library Books Due Date Reminder', 
+    content: 'This is a reminder that the due date for returning all library books is January 31st, 2024. Please return or renew your books before this date to avoid late fees.', 
+    type: 'global', 
+    priority: 'low', 
+    publishedAt: '2024-01-12T12:00:00Z', 
+    isRead: true 
+  },
+  { 
+    id: '8', 
+    title: 'Important: Change in Faculty', 
+    content: 'We would like to inform you that Mr. Sharma will be taking over Physics classes starting next week. We welcome him to our institute and wish him the best.', 
+    type: 'batch', 
+    priority: 'high', 
+    publishedAt: '2024-01-11T14:30:00Z', 
+    isRead: false 
+  },
+  { 
+    id: '9', 
+    title: 'Workshop on Time Management', 
+    content: 'A special workshop on Time Management and Study Techniques will be conducted on January 28th from 2 PM to 5 PM. Attendance is mandatory for all students.', 
+    type: 'batch', 
+    priority: 'medium', 
+    publishedAt: '2024-01-10T11:45:00Z', 
+    isRead: true,
+    attachments: ['workshop_brochure.pdf']
+  },
+  { 
+    id: '10', 
+    title: 'Fee Payment Reminder', 
+    content: 'This is a gentle reminder that the last date for fee payment for the current quarter is January 20th, 2024. Please ensure timely payment to avoid late fees.', 
+    type: 'batch', 
+    priority: 'high', 
+    publishedAt: '2024-01-09T10:00:00Z', 
+    isRead: false 
+  },
+  { 
+    id: '11', 
+    title: 'New Online Portal Launched', 
+    content: 'We are excited to announce the launch of our new student portal. You can now access study materials, test results, and other resources online. Login credentials have been sent to your registered email.', 
+    type: 'global', 
+    priority: 'medium', 
+    publishedAt: '2024-01-08T16:20:00Z', 
+    isRead: true 
+  },
+  { 
+    id: '12', 
+    title: 'Special Class on Organic Chemistry', 
+    content: 'A special class on challenging topics in Organic Chemistry will be conducted this Sunday from 9 AM to 12 PM. Please bring your NCERT books and doubt notebooks.', 
+    type: 'batch', 
+    priority: 'high', 
+    publishedAt: '2024-01-07T14:15:00Z', 
+    isRead: false 
+  }
+];
+const mockTestResults: TestResult[] = [
+  { 
+    id: '1', 
+    testName: 'Physics Unit Test - Mechanics', 
+    subject: 'Physics', 
+    totalMarks: 100, 
+    obtainedMarks: 87, 
+    percentage: 87, 
+    rank: 3, 
+    conductedAt: '2024-01-15T10:00:00Z', 
+    status: 'completed' 
+  }, 
+  { 
+    id: '2', 
+    testName: 'Chemistry Mock Test - Organic', 
+    subject: 'Chemistry', 
+    totalMarks: 150, 
+    obtainedMarks: 128, 
+    percentage: 85.3, 
+    rank: 5, 
+    conductedAt: '2024-01-10T14:00:00Z', 
+    status: 'completed' 
+  },
+  { 
+    id: '3', 
+    testName: 'Mathematics - Calculus', 
+    subject: 'Mathematics', 
+    totalMarks: 100, 
+    obtainedMarks: 92, 
+    percentage: 92, 
+    rank: 2, 
+    conductedAt: '2024-01-05T09:30:00Z', 
+    status: 'completed' 
+  },
+  { 
+    id: '4', 
+    testName: 'Physics - Thermodynamics', 
+    subject: 'Physics', 
+    totalMarks: 100, 
+    obtainedMarks: 78, 
+    percentage: 78, 
+    rank: 8, 
+    conductedAt: '2023-12-28T11:00:00Z', 
+    status: 'completed' 
+  },
+  { 
+    id: '5', 
+    testName: 'Full Syllabus Test - 1', 
+    subject: 'All Subjects', 
+    totalMarks: 360, 
+    obtainedMarks: 298, 
+    percentage: 82.8, 
+    rank: 4, 
+    conductedAt: '2023-12-20T09:00:00Z', 
+    status: 'completed' 
+  },
+  { 
+    id: '6', 
+    testName: 'Chemistry - Inorganic', 
+    subject: 'Chemistry', 
+    totalMarks: 100, 
+    obtainedMarks: 0, 
+    percentage: 0, 
+    rank: 0, 
+    conductedAt: '2024-01-20T10:00:00Z', 
+    status: 'pending_result' 
+  }
+];
+const mockUpcomingTests: UpcomingTest[] = [ { id: '1', testName: 'JEE Advanced Mock Test - 1', subject: 'All Subjects', scheduledAt: '2024-01-27T10:00:00Z', duration: 180, totalMarks: 300, syllabus: ['Mechanics', 'Thermodynamics'], isRegistered: true }, ];
+const mockStudyMaterials: StudyMaterial[] = [
+  { 
+    id: '1', 
+    title: 'Electromagnetic Induction - Complete Notes', 
+    subject: 'Physics', 
+    type: 'pdf', 
+    url: '/materials/electro-magnetic-induction.pdf',
+    uploadedAt: '2024-01-17T14:30:00Z', 
+    uploadedBy: 'Dr. Sharma', 
+    fileSize: '2.4 MB', 
+    downloads: 23, 
+    isNew: true,
+    description: 'Comprehensive notes covering all concepts of electromagnetic induction with solved examples.'
+  },
+  { 
+    id: '2', 
+    title: 'Organic Chemistry - Video Lecture', 
+    subject: 'Chemistry', 
+    type: 'video', 
+    url: '/videos/org-chem-lecture.mp4',
+    uploadedAt: '2024-01-16T10:15:00Z', 
+    uploadedBy: 'Prof. Gupta', 
+    fileSize: '156 MB', 
+    duration: '45:22',
+    downloads: 42, 
+    isNew: false,
+    description: 'Detailed explanation of organic chemistry concepts with practical examples.'
+  },
+  { 
+    id: '3', 
+    title: 'Calculus - Integration Techniques', 
+    subject: 'Mathematics', 
+    type: 'youtube', 
+    url: 'https://www.youtube.com/watch?v=rfG8ce4NVbM',
+    uploadedAt: '2024-01-15T16:45:00Z', 
+    uploadedBy: 'Dr. Kumar', 
+    fileSize: 'Streaming', 
+    duration: '32:18',
+    downloads: 87, 
+    isNew: true,
+    description: 'Master integration techniques with step-by-step examples and practice problems.'
+  },
+];
+const initialInstallments: FeeInstallment[] = [ { id: '1', installmentNumber: 1, amount: 15000, dueDate: '2024-01-15T00:00:00Z', status: 'paid', paidDate: '2024-01-10T10:30:00Z', transactionId: 'TXN123456789' }, { id: '2', installmentNumber: 2, amount: 15000, dueDate: '2024-02-15T00:00:00Z', status: 'paid', paidDate: '2024-02-12T14:20:00Z', transactionId: 'TXN987654321' }, { id: '3', installmentNumber: 3, amount: 15000, dueDate: '2024-03-15T00:00:00Z', status: 'pending' }, { id: '4', installmentNumber: 4, amount: 15000, dueDate: '2024-04-15T00:00:00Z', status: 'pending' }, ];
+
+export default function CoachingDashboard() {
+  // State for tabs and UI
+  const [activeTab, setActiveTab] = useState('overview');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // State for modals and UI
+  const [showMaterialViewer, setShowMaterialViewer] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Selected items state
+  const [selectedMaterial, setSelectedMaterial] = useState<StudyMaterial | null>(null);
+  const [selectedInstallment, setSelectedInstallment] = useState<FeeInstallment | null>(null);
+  
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [upiId, setUpiId] = useState('');
+  
+  // Mock data state
+  const [coachingInfo] = useState({
+    name: 'Coaching Center',
+    batch: 'Batch 2024',
+    standard: '12th',
+    subjects: ['Physics', 'Chemistry', 'Mathematics'],
+    startDate: '2024-01-01',
+    endDate: '2024-12-31'
+  });
+  
+  // Data state
+  const [notices] = useState<Notice[]>(mockNotices);
+  const [testResults] = useState<TestResult[]>(mockTestResults);
+  const [upcomingTests] = useState<UpcomingTest[]>(mockUpcomingTests);
+  const [studyMaterials] = useState<StudyMaterial[]>(mockStudyMaterials);
+  const [installments] = useState<FeeInstallment[]>(initialInstallments);
+  
+  // Pagination state
+  const [currentNoticePage, setCurrentNoticePage] = useState(1);
+  const noticesPerPage = 5;
+  const itemsPerPage = 9;
+
+  // Calculate fees
+  const totalFees = 60000;
+  const paidAmount = installments
+    .filter(installment => installment.status === 'paid')
+    .reduce((sum, installment) => sum + installment.amount, 0);
+  const pendingAmount = totalFees - paidAmount;
+
+  // Initialize data
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Helper functions
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Get color based on priority level
+  const getPriorityColor = (priority: string) => {
+    if (priority === 'high') return 'bg-red-100 text-red-800 border-red-200';
+    if (priority === 'medium') return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    return 'bg-green-100 text-green-800 border-green-200';
+  };
+
+  // Get appropriate icon for material type
+  const getTypeIcon = (type: string) => {
+    if (type === 'notes') return <FileText className="h-4 w-4" />;
+    if (type === 'assignment') return <BookOpen className="h-4 w-4" />;
+    if (type === 'pdf') return <FileText className="h-4 w-4 text-red-500" />;
+    if (type === 'video') return <Video className="h-4 w-4 text-blue-500" />;
+    if (type === 'youtube') return <Youtube className="h-4 w-4 text-red-600" />;
+    return <FileText className="h-4 w-4 text-green-500" />;
+  };
+
+  const getPerformanceColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-green-600';
+    if (percentage >= 75) return 'text-blue-600';
+    return 'text-red-600';
+  };
+
+  // Handlers
+  const handlePayment = (installment: FeeInstallment) => {
+    setSelectedInstallment(installment);
+    setShowPaymentDialog(true);
+  };
+
+  const processPayment = async () => {
+    if (!selectedInstallment) return;
+    
+  // State for modals
+  const [showMaterialViewer, setShowMaterialViewer] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  
+  // Selected items state
+  const [selectedMaterial, setSelectedMaterial] = useState<StudyMaterial | null>(null);
+  const [selectedInstallment, setSelectedInstallment] = useState<FeeInstallment | null>(null);
+  
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [upiId, setUpiId] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Mock data state
+  const [coachingInfo, setCoachingInfo] = useState({
+    name: 'Coaching Center',
+    batch: 'Batch 2024',
+    standard: '12th',
+    subjects: ['Physics', 'Chemistry', 'Mathematics'],
+    startDate: '2024-01-01',
+    endDate: '2024-12-31'
+  });
+  
+  const [notices, setNotices] = useState<Notice[]>(mockNotices);
+  const [testResults, setTestResults] = useState<TestResult[]>(mockTestResults);
+  const [upcomingTests, setUpcomingTests] = useState<UpcomingTest[]>(mockUpcomingTests);
+  const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>(mockStudyMaterials);
+  const [installments, setInstallments] = useState<FeeInstallment[]>(initialInstallments);
+  // Pagination state
+  const [currentNoticePage, setCurrentNoticePage] = useState(1);
+  const noticesPerPage = 5;
+  const itemsPerPage = 9;
+
+  // Calculate fees
+  const totalFees = 60000;
+  const paidAmount = installments
+    .filter(installment => installment.status === 'paid')
+    .reduce((sum, installment) => sum + installment.amount, 0);
+  const pendingAmount = totalFees - paidAmount;
+
+  // Initialize data
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Helper functions
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+
+const formatDateForICS = (date: Date): string => {
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+    'T',
+    String(date.getUTCHours()).padStart(2, '0'),
+    String(date.getUTCMinutes()).padStart(2, '0'),
+    String(date.getUTCSeconds()).padStart(2, '0'),
+    'Z'
+  ].join('');
+};
+
+// Handlers
+const handlePayment = (installment: FeeInstallment) => {
+  setSelectedInstallment(installment);
+  setShowPaymentDialog(true);
+};
+
+const processPayment = async () => {
+  if (paymentMethod === 'upi' && !upiId) {
+    showNotification('Please enter UPI ID', 'error');
+    return;
+  }
+
+  setIsProcessing(true);
+  // Simulate API call
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Update installments state
+    setInstallments(prev => 
+      prev.map(inst => 
+        inst.id === selectedInstallment?.id 
+          ? { 
+              ...inst, 
+              status: 'paid', 
+              paidDate: new Date().toISOString(),
+              transactionId: `TXN${Math.floor(100000 + Math.random() * 900000)}`
+            } 
+          : inst
+      )
+    );
+    
+    setShowPaymentDialog(false);
+    showNotification('Payment processed successfully!', 'success');
+  } catch (error) {
+    showNotification('Payment failed. Please try again.', 'error');
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
+const openMaterialViewer = (material: StudyMaterial) => {
+  setSelectedMaterial(material);
+  setShowMaterialViewer(true);
+};
+
+const renderMaterialPreview = (material: StudyMaterial) => {
+  switch (material.type) {
+    case 'pdf':
+      return (
+        <div className="h-64 w-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <FileText className="h-16 w-16 text-red-500" />
+        </div>
+      );
+    case 'video':
+      return (
+        <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
+          <video
+            src={material.url}
+            controls
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    case 'youtube':
+      const videoId = material.url.split('v=')[1]?.split('&')[0];
+      return (
+        <div className="aspect-video w-full">
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}`}
+            className="w-full h-full rounded-lg"
+            allowFullScreen
+          />
+        </div>
+        );
+    }
+  };
+
+  // Format date for iCalendar (ICS) format
+  const formatDateForICS = (date: Date): string => {
+    return [
+
+  // Render material preview based on type
+  const renderMaterialPreview = (material: StudyMaterial) => {
+    switch (material.type) {
+      case 'pdf':
+        return (
+          <div className="h-64 w-full bg-gray-100 rounded-lg flex items-center justify-center">
+            <FileText className="h-16 w-16 text-red-500" />
+          </div>
+        );
+      case 'video':
+        return (
+          <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
+            <video
+              src={material.url}
+              controls
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
+      case 'youtube':
+        const videoId = material.url.split('v=')[1]?.split('&')[0];
+        return (
+          <div className="aspect-video w-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}`}
+              className="w-full h-full rounded-lg"
+              allowFullScreen
+            />
+          </div>
+        );
+      default:
+        return (
+          <div className="h-64 w-full bg-gray-100 rounded-lg flex items-center justify-center">
+            <FileText className="h-16 w-16 text-gray-400" />
+          </div>
+        );
+    }
+  };
+
+  // Open material viewer modal
+  const openMaterialViewer = (material: StudyMaterial) => {
+    setSelectedMaterial(material);
+    setShowMaterialViewer(true);
+  };
+
+  // Handle payment button click
+  const handlePayment = (installment: FeeInstallment) => {
+    setSelectedInstallment(installment);
+    setShowPaymentDialog(true);
+  };
+
+  // Process payment
+  const processPayment = async () => {
+    if (!selectedInstallment) return;
+    
+    if (paymentMethod === 'upi' && !upiId) {
+      showNotification('Please enter UPI ID', 'error');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update installments state
+      setInstallments(prev => 
+        prev.map(inst => 
+          inst.id === selectedInstallment?.id 
+            ? { 
+                ...inst, 
+                status: 'paid', 
+                paidDate: new Date().toISOString(),
+                transactionId: `TXN${Math.floor(100000 + Math.random() * 900000)}`
+              } 
+            : inst
+        )
+      );
+      
+      setShowPaymentDialog(false);
+      showNotification('Payment processed successfully!', 'success');
+    } catch (error) {
+      showNotification('Payment failed. Please try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const renderSkeleton = (tab: string) => {
+    if (tab === 'overview') return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent className="space-y-4">{[...Array(3)].map((_, i) => (<div key={i} className="flex items-start space-x-3 p-3"><Skeleton className="h-8 w-8 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></div></div>))}</CardContent></Card>
+        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent className="space-y-4">{[...Array(2)].map((_, i) => (<div key={i} className="p-4 border rounded-lg space-y-2"><Skeleton className="h-5 w-1/2" /><div className="grid grid-cols-3 gap-4"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div></div>))}</CardContent></Card>
+      </div>
+    );
+    if (tab === 'notices') return (
+      <div className="space-y-4"><div className="flex items-center space-x-4"><Skeleton className="h-10 flex-1" /><Skeleton className="h-10 w-24" /></div>{[...Array(2)].map((_, i) => (<Card key={i}><CardContent className="p-6 space-y-4"><div className="flex items-start space-x-3"><Skeleton className="h-10 w-10 rounded-lg" /><div className="flex-1 space-y-2"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /></CardContent></Card>))}</div>
+    );
+    if (tab === 'tests') return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent className="space-y-4">{[...Array(2)].map((_, i) => (<div key={i} className="p-4 border rounded-lg space-y-3"><Skeleton className="h-5 w-3/4" /><div className="grid grid-cols-2 gap-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></div>))}</CardContent></Card>
+        <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent className="space-y-4">{[...Array(2)].map((_, i) => (<div key={i} className="p-4 border rounded-lg space-y-3"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-12 w-full" /><Skeleton className="h-8 w-full" /></div>))}</CardContent></Card>
+      </div>
+    );
+    if (tab === 'materials') return (
+      <div className="space-y-4"><div className="flex items-center space-x-4"><Skeleton className="h-10 flex-1" /><Skeleton className="h-10 w-36" /></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{[...Array(3)].map((_, i) => (<Card key={i}><CardContent className="p-6 space-y-4"><div className="flex items-start space-x-3"><Skeleton className="h-10 w-10 rounded-lg" /><div className="flex-1 space-y-2"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div><div className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /></div><div className="flex space-x-2"><Skeleton className="h-10 flex-1" /><Skeleton className="h-10 w-10" /></div></CardContent></Card>))}</div></div>
+    );
+    if (tab === 'fees') return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent className="grid grid-cols-3 gap-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+    return null;
+  };
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          {isLoading ? (
+            <Skeleton className="h-10 w-1/3" />
+          ) : (
+            <h1 className="text-3xl font-bold text-brand-navy">{coachingInfo.name}</h1>
+          )}
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="notices">Notices</TabsTrigger>
+            <TabsTrigger value="tests">Tests</TabsTrigger>
+            <TabsTrigger value="materials">Materials</TabsTrigger>
+            <TabsTrigger value="fees">Fees</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            {isLoading ? (
+              renderSkeleton('overview')
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Notices Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Recent Notices</span>
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('notices')}>
+                        View All
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {mockNotices.slice(0, 3).map((notice) => (
+                      <div key={notice.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                        {/* Notice content */}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+                {/* Test Results Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Recent Test Results</span>
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('tests')}>
+                        View All
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {mockTestResults.slice(0, 3).map((test) => (
+                      <div key={test.id} className="p-4 border border-gray-200 rounded-lg">
+                        {/* Test result content */}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Notices Tab */}
+          <TabsContent value="notices" className="space-y-6">
+            {isLoading ? (
+              renderSkeleton('notices')
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="w-full sm:w-96">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input 
+                        placeholder="Search notices..." 
+                        value={searchTerm}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setCurrentNoticePage(1); // Reset to first page on search
+                        }}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="global">Global</SelectItem>
+                        <SelectItem value="batch">Batch</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Newest First</SelectItem>
+                        <SelectItem value="oldest">Oldest First</SelectItem>
+                        <SelectItem value="priority">Priority</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {mockNotices
+                    .filter(notice => 
+                      notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      notice.content.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .slice((currentNoticePage - 1) * noticesPerPage, currentNoticePage * noticesPerPage)
+                    .map((notice) => (
+                      <Card 
+                        key={notice.id} 
+                        className={`relative overflow-hidden ${!notice.isRead ? 'border-l-4 border-l-brand' : ''}`}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-4">
+                              <div className={`p-3 rounded-lg ${notice.type === 'global' ? 'bg-blue-50' : 'bg-green-50'}`}>
+                                <Bell className={`h-5 w-5 ${notice.type === 'global' ? 'text-blue-600' : 'text-green-600'}`} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="text-lg font-semibold text-brand-navy">{notice.title}</h3>
+                                  <span className="text-sm text-gray-500">
+                                    {formatDate(notice.publishedAt)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <Badge className={getPriorityColor(notice.priority)}>
+                                    {notice.priority.charAt(0).toUpperCase() + notice.priority.slice(1)}
+                                  </Badge>
+                                  <Badge variant="outline">
+                                    {notice.type === 'global' ? 'Global' : 'Batch'}
+                                  </Badge>
+                                </div>
+                                <p className="text-gray-700 mt-3">{notice.content}</p>
+                                {notice.attachments && notice.attachments.length > 0 && (
+                                  <div className="mt-3 flex items-center space-x-4">
+                                    <span className="text-sm font-medium text-gray-700">Attachments:</span>
+                                    <div className="flex flex-wrap gap-2">
+                                      {notice.attachments.map((file, idx) => (
+                                        <a 
+                                          key={idx}
+                                          href={`/api/download/${file}`}
+                                          className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
+                                          download
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <FileText className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                                          {file}
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {!notice.isRead && (
+                              <div className="w-2.5 h-2.5 bg-brand rounded-full ml-2 mt-1 flex-shrink-0"></div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+
+                {/* Pagination */}
+                {mockNotices.length > noticesPerPage && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-gray-500">
+                      Showing {Math.min((currentNoticePage - 1) * noticesPerPage + 1, mockNotices.length)} to {Math.min(currentNoticePage * noticesPerPage, mockNotices.length)} of {mockNotices.length} notices
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setCurrentNoticePage(1)}
+                        disabled={currentNoticePage === 1}
+                      >
+                        First
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setCurrentNoticePage(p => Math.max(1, p - 1))}
+                        disabled={currentNoticePage === 1}
+                      >
+                        Previous
+                      </Button>
+                      {Array.from({ length: Math.min(5, Math.ceil(mockNotices.length / noticesPerPage)) }, (_, i) => {
+                        let pageNum;
+                        if (Math.ceil(mockNotices.length / noticesPerPage) <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentNoticePage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentNoticePage >= Math.ceil(mockNotices.length / noticesPerPage) - 2) {
+                          pageNum = Math.ceil(mockNotices.length / noticesPerPage) - 4 + i;
+                        } else {
+                          pageNum = currentNoticePage - 2 + i;
+                        }
+                        
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentNoticePage === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setCurrentNoticePage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCurrentNoticePage(p => Math.min(Math.ceil(mockNotices.length / noticesPerPage), p + 1))}
+                        disabled={currentNoticePage === Math.ceil(mockNotices.length / noticesPerPage)}
+                      >
+                        Next
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCurrentNoticePage(Math.ceil(mockNotices.length / noticesPerPage))}
+                        disabled={currentNoticePage === Math.ceil(mockNotices.length / noticesPerPage)}
+                      >
+                        Last
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tests" className="space-y-6">
+            {isLoading ? (
+              renderSkeleton('tests')
+            ) : (
+              <div className="space-y-8">
+                {/* Test Results */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Test Results</h3>
+                  <div className="bg-white rounded-lg border shadow overflow-hidden">
+                    <div className="p-4 border-b">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input 
+                            placeholder="Search tests..." 
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Select>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Filter by subject" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Subjects</SelectItem>
+                              <SelectItem value="physics">Physics</SelectItem>
+                              <SelectItem value="chemistry">Chemistry</SelectItem>
+                              <SelectItem value="mathematics">Mathematics</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Select>
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="recent">Most Recent</SelectItem>
+                              <SelectItem value="oldest">Oldest First</SelectItem>
+                              <SelectItem value="marks">Highest Marks</SelectItem>
+                              <SelectItem value="rank">Best Rank</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Name</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Subject</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">%</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Rank</th>
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {mockTestResults
+                            .filter(test => 
+                              test.testName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              test.subject.toLowerCase().includes(searchTerm.toLowerCase())
+                            )
+                            .map((test) => (
+                              <tr key={test.id} className="hover:bg-gray-50">
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">{test.testName}</div>
+                                  <div className="text-xs text-gray-500 sm:hidden">{test.subject}</div>
+                                  {test.status === 'pending_result' && (
+                                    <span className="mt-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                      Result Pending
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                                  {test.subject}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {new Date(test.conductedAt).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                                  {test.status === 'completed' ? (
+                                    <span className="font-medium">{test.obtainedMarks}/{test.totalMarks}</span>
+                                  ) : '-'}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                                  {test.status === 'completed' ? (
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      test.percentage >= 90 ? 'bg-green-100 text-green-800' : 
+                                      test.percentage >= 75 ? 'bg-blue-100 text-blue-800' :
+                                      test.percentage >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {test.percentage}%
+                                    </span>
+                                  ) : '-'}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                                  {test.status === 'completed' ? (
+                                    <span className="font-medium">#{test.rank}</span>
+                                  ) : '-'}
+                                </td>
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="flex justify-end space-x-2">
+                                    <button className="text-brand hover:text-brand-navy text-sm">
+                                      <span className="hidden sm:inline">View</span>
+                                      <span className="sm:hidden">
+                                        <Eye className="h-4 w-4" />
+                                      </span>
+                                    </button>
+                                    {test.status === 'completed' && (
+                                      <button className="text-brand hover:text-brand-navy text-sm">
+                                        <span className="hidden sm:inline">Download</span>
+                                        <span className="sm:hidden">
+                                          <Download className="h-4 w-4" />
+                                        </span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upcoming Tests */}
+                <div className="mt-12">
+                  <h3 className="text-lg font-semibold mb-4">Upcoming Tests</h3>
+                  <div className="bg-white rounded-lg border shadow overflow-hidden">
+                    <div className="p-4 border-b">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input 
+                            placeholder="Search upcoming tests..." 
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Select>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Filter by subject" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Subjects</SelectItem>
+                              <SelectItem value="physics">Physics</SelectItem>
+                              <SelectItem value="chemistry">Chemistry</SelectItem>
+                              <SelectItem value="mathematics">Mathematics</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Select>
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="soonest">Soonest First</SelectItem>
+                              <SelectItem value="latest">Latest First</SelectItem>
+                              <SelectItem value="duration">Duration</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {mockUpcomingTests.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Name</th>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Subject</th>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Duration</th>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Syllabus</th>
+                              <th scope="col" className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {mockUpcomingTests
+                              .filter(test => 
+                                test.testName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                test.subject.toLowerCase().includes(searchTerm.toLowerCase())
+                              )
+                              .map((test) => (
+                                <tr key={test.id} className="hover:bg-gray-50">
+                                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-medium text-gray-900">{test.testName}</div>
+                                    <div className="text-xs text-gray-500 sm:hidden">{test.subject}</div>
+                                    <div className="md:hidden text-xs text-gray-500 mt-1">
+                                      {Math.floor(test.duration / 60)}h {test.duration % 60}m
+                                    </div>
+                                  </td>
+                                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                                    {test.subject}
+                                  </td>
+                                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                                    <div className="font-medium">{new Date(test.scheduledAt).toLocaleDateString()}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {new Date(test.scheduledAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                                    {Math.floor(test.duration / 60)}h {test.duration % 60}m
+                                  </td>
+                                  <td className="px-4 sm:px-6 py-4 text-sm">
+                                    <div className="flex flex-wrap gap-1">
+                                      {test.syllabus.slice(0, 2).map((topic, idx) => (
+                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                          {topic}
+                                        </span>
+                                      ))}
+                                      {test.syllabus.length > 2 && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                          +{test.syllabus.length - 2} more
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div className="flex flex-col sm:flex-row justify-end gap-2">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="text-xs sm:text-sm"
+                                        onClick={() => {
+                                          // Add to calendar functionality
+                                          const startTime = new Date(test.scheduledAt);
+                                          const endTime = new Date(startTime.getTime() + test.duration * 60000);
+                                          
+                                          const icsContent = [
+                                            'BEGIN:VCALENDAR',
+                                            'VERSION:2.0',
+                                            'BEGIN:VEVENT',
+                                            `DTSTART:${formatDateForICS(startTime)}`,
+                                            `DTEND:${formatDateForICS(endTime)}`,
+                                            `SUMMARY:${test.testName}`,
+                                            `DESCRIPTION:Subject: ${test.subject}\nSyllabus: ${test.syllabus.join(', ')}`,
+                                            `LOCATION:Online/Coaching Center`,
+                                            'END:VEVENT',
+                                            'END:VCALENDAR'
+                                          ].join('\n');
+                                          
+                                          const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                                          const url = URL.createObjectURL(blob);
+                                          
+                                          const link = document.createElement('a');
+                                          link.href = url;
+                                          link.setAttribute('download', `${test.testName.replace(/\s+/g, '_')}.ics`);
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                        }}
+                                      >
+                                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                                        <span>Add to Calendar</span>
+                                      </Button>
+                                      {!test.isRegistered ? (
+                                        <Button size="sm" className="text-xs sm:text-sm">
+                                          Register Now
+                                        </Button>
+                                      ) : (
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          Registered
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No upcoming tests</h3>
+                        <p className="mt-1 text-sm text-gray-500">Check back later for scheduled tests.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="materials">
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 className="text-xl font-semibold text-brand-navy">Study Materials</h2>
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input 
+                        placeholder="Search materials..." 
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {mockStudyMaterials
+                      .filter(material => 
+                        material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        material.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map((material) => (
+                        <Card key={material.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-0">
+                            {renderMaterialPreview(material)}
+                            <div className="p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <Badge variant={material.type === 'pdf' ? 'destructive' : material.type === 'video' ? 'default' : 'secondary'}>
+                                  {material.type.toUpperCase()}
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {formatDate(material.uploadedAt)}
+                                </span>
+                              </div>
+                              <h3 className="font-medium text-brand-navy mb-1 line-clamp-2">
+                                {material.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                {material.description || 'No description available'}
+                              </p>
+                              <div className="flex items-center justify-between text-xs text-gray-500">
+                                <span>By {material.uploadedBy}</span>
+                                <div className="flex items-center space-x-2">
+                                  <span>{material.downloads} downloads</span>
+                                  {material.isNew && (
+                                    <span className="px-1.5 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                      New
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <Button variant="outline" size="sm" className="w-full mt-3">
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Material Viewer Modal */}
+          <Dialog open={showMaterialViewer} onOpenChange={setShowMaterialViewer}>
+            <DialogContent className="max-w-4xl p-0 overflow-hidden">
+                    {selectedMaterial && (
+                      <div className="max-h-[80vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white z-10 p-4 border-b flex items-center justify-between">
+                          <DialogHeader>
+                            <DialogTitle className="text-lg">{selectedMaterial.title}</DialogTitle>
+                            <DialogDescription className="text-sm">
+                              {selectedMaterial.subject} • {selectedMaterial.uploadedBy} • {formatDate(selectedMaterial.uploadedAt)}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setShowMaterialViewer(false)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X className="h-5 w-5" />
+                          </Button>
+                        </div>
+                        
+                        <div className="p-6">
+                          {selectedMaterial.type === 'pdf' ? (
+                            <div className="w-full h-[70vh]">
+                              <iframe 
+                                src={`/api/viewer?file=${encodeURIComponent(selectedMaterial.url)}`}
+                                className="w-full h-full border rounded-lg"
+                                title={selectedMaterial.title}
+                              />
+                            </div>
+                          ) : selectedMaterial.type === 'video' ? (
+                            <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
+                              <video 
+                                className="w-full h-full" 
+                                controls 
+                                autoPlay
+                              >
+                                <source src={selectedMaterial.url} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          ) : selectedMaterial.type === 'youtube' ? (
+                            <div className="aspect-video w-full">
+                              <iframe
+                                className="w-full h-full rounded-lg"
+                                src={selectedMaterial.url.replace('watch?v=', 'embed/')}
+                                title={selectedMaterial.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                          ) : (
+                            <div className="prose max-w-none">
+                              <p className="text-gray-700">{selectedMaterial.description || 'No content available.'}</p>
+                            </div>
+                          )}
+                          
+                          <div className="mt-6 pt-6 border-t">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <h4 className="text-sm font-medium">File Information</h4>
+                                <p className="text-sm text-gray-600">
+                                  Type: {selectedMaterial.type.toUpperCase()} • Size: {selectedMaterial.fileSize} • 
+                                  Downloads: {selectedMaterial.downloads}
+                                </p>
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  // Handle download
+                                  window.open(selectedMaterial.url, '_blank');
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="fees" className="space-y-6">
+            {isLoading ? (
+              renderSkeleton('fees')
+            ) : (
+              <>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Fee Summary</CardTitle>
+                    <Badge variant={pendingAmount > 0 ? "destructive" : "default"}>
+                      {pendingAmount > 0 ? 'Dues Pending' : 'All Clear'}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-3 gap-4">
+                    {/* Fee summary cards */}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Installments</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {installments.map((inst) => (
+                      <div key={inst.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        {/* Installment content */}
+                        <Button 
+                          onClick={() => {
+                            setSelectedInstallment(inst);
+                            setShowPaymentDialog(true);
+                          }}
+                          disabled={inst.status === 'paid'}
+                        >
+                          Pay Now
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Payment Dialog */}
+        <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Make Payment</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="upi" id="upi" />
+                    <Label htmlFor="upi">UPI</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="card" id="card" />
+                    <Label htmlFor="card">Card</Label>
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {paymentMethod === 'upi' && (
+                <div className="space-y-2">
+                  <Label htmlFor="upiId">UPI ID</Label>
+                  <Input
+                    id="upiId"
+                    placeholder="yourname@upi"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {paymentMethod === 'card' && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Card Number</Label>
+                    <Input placeholder="1234 5678 9012 3456" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Expiry Date</Label>
+                      <Input placeholder="MM/YY" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CVV</Label>
+                      <Input placeholder="123" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentDialog(false)}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={processPayment}
+                disabled={isProcessing || (paymentMethod === 'upi' && !upiId)}
+              >
+                {isProcessing ? 'Processing...' : `Pay ₹${selectedInstallment?.amount.toLocaleString('en-IN')}`}
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
+</div>
+</div>
+
+<TabsContent value="fees" className="space-y-6">
+  {isLoading ? (
+    renderSkeleton('fees')
+  ) : (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Fee Summary</CardTitle>
+          <Badge variant={pendingAmount > 0 ? "destructive" : "default"}>
+            {pendingAmount > 0 ? 'Dues Pending' : 'All Clear'}
+          </Badge>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-4">
+          {/* Fee summary cards */}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Installments</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {installments.map((inst) => (
+            <div key={inst.id} className="flex items-center justify-between p-4 border rounded-lg">
+              {/* Installment content */}
+              <Button 
+                onClick={() => {
+                  setSelectedInstallment(inst);
+                  setShowPaymentDialog(true);
+                }}
+                disabled={inst.status === 'paid'}
+              >
+                Pay Now
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </>
+  )}
+</TabsContent>
+
+{/* Payment Dialog */}
+<Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Make Payment</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+      <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="upi" id="upi" />
+            <Label htmlFor="upi">UPI</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="card" id="card" />
+            <Label htmlFor="card">Card</Label>
+          </div>
+        </div>
+      </RadioGroup>
+
+      {paymentMethod === 'upi' && (
+        <div className="space-y-2">
+          <Label htmlFor="upiId">UPI ID</Label>
+          <Input
+            id="upiId"
+            placeholder="yourname@upi"
+            value={upiId}
+            onChange={(e) => setUpiId(e.target.value)}
+          />
+        </div>
+      )}
+
+      {paymentMethod === 'card' && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Card Number</Label>
+            <Input placeholder="1234 5678 9012 3456" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Expiry Date</Label>
+              <Input placeholder="MM/YY" />
+            </div>
+            <div className="space-y-2">
+              <Label>CVV</Label>
+              <Input placeholder="123" />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+    <DialogFooter>
+      <Button
+        variant="outline"
+        onClick={() => setShowPaymentDialog(false)}
+        disabled={isProcessing}
+      >
+        Cancel
+      </Button>
+      <Button
+        onClick={processPayment}
+        disabled={isProcessing || (paymentMethod === 'upi' && !upiId)}
+      >
+        {isProcessing ? 'Processing...' : `Pay ₹${selectedInstallment?.amount.toLocaleString('en-IN')}`}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+</div>
+</div>
