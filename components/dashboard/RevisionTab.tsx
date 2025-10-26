@@ -313,12 +313,22 @@ export default function RevisionTab() {
   }
 
   const handleFilterChange = (type: keyof FilterState, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [type]: prev[type].includes(value)
-        ? prev[type].filter(item => item !== value)
-        : [...prev[type], value]
-    }))
+    setFilters(prev => {
+      const currentValue = prev[type];
+      
+      // Handle boolean type separately
+      if (typeof currentValue === 'boolean') {
+        return prev;
+      }
+      
+      // Handle array types
+      return {
+        ...prev,
+        [type]: currentValue.includes(value)
+          ? currentValue.filter(item => item !== value)
+          : [...currentValue, value]
+      };
+    });
   }
 
   // Apply filters - fetch from backend
