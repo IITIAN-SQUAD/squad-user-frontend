@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import { 
   ArrowLeft,
@@ -425,10 +425,29 @@ const mockTestQuestions: { [key: string]: TestQuestion[] } = {
 
 export default function CoachingDashboard() {
   const params = useParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAttendancePopup, setShowAttendancePopup] = useState(false);
+  const [showScorePopup, setShowScorePopup] = useState(false);
+  const [showFeePopup, setShowFeePopup] = useState(false);
+  const [showRankPopup, setShowRankPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentNoticePage, setCurrentNoticePage] = useState(1);
-  const noticesPerPage = 10;
+  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedTestType, setSelectedTestType] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [newNote, setNewNote] = useState({ title: '', content: '', subject: '' });
+
+  const coachingId = params.id as string;
+  const [isClient, setIsClient] = useState(false);
+  const [showTestDetails, setShowTestDetails] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<TestResult | null>(null);
+  const [showBookmarkedMaterials, setShowBookmarkedMaterials] = useState(false);
+  const [noticeFilter, setNoticeFilter] = useState('all');
+  const [testFilter, setTestFilter] = useState('all');
   const [materialSort, setMaterialSort] = useState('newest');
   const [materialFilter, setMaterialFilter] = useState('all');
   const [showMaterialViewer, setShowMaterialViewer] = useState(false);
@@ -438,15 +457,10 @@ export default function CoachingDashboard() {
   const [activeNote, setActiveNote] = useState('');
   const [notes, setNotes] = useState(mockNotes);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
-  const [isClient, setIsClient] = useState(false);
-  const [showTestDetails, setShowTestDetails] = useState(false);
-  const [selectedTest, setSelectedTest] = useState<TestResult | null>(null);
-  const [showBookmarkedMaterials, setShowBookmarkedMaterials] = useState(false);
-  const [noticeFilter, setNoticeFilter] = useState('all');
-  const [testFilter, setTestFilter] = useState('all');
+  const [currentNoticePage, setCurrentNoticePage] = useState(1);
+  const noticesPerPage = 5;
 
   useEffect(() => {
     setIsClient(true);
@@ -471,6 +485,7 @@ export default function CoachingDashboard() {
     subjects: ['Physics', 'Chemistry', 'Mathematics'],
     totalStudents: 45,
     myRank: 12,
+    rank: 12,
     attendance: 92,
     avgScore: 85,
     studyHours: 42,
@@ -588,11 +603,7 @@ export default function CoachingDashboard() {
             <h1 className="text-2xl sm:text-3xl font-bold text-brand-navy">{coachingInfo.name}</h1>
             <p className="text-gray-600">{coachingInfo.batchName} • {coachingInfo.standard}</p>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-            <div className="text-left sm:text-right">
-              <p className="text-sm text-gray-500">My Rank</p>
-              <p className="text-xl sm:text-2xl font-bold text-brand-navy">#{coachingInfo.myRank}</p>
-            </div>
+          <div className="flex justify-end w-full sm:w-auto">
             <Link href={`/dashboard/coaching/${params.id}/fees`} className="w-full sm:w-auto">
               <Button className="bg-brand text-brand-navy hover:bg-brand/90 px-4 sm:px-6 py-2 w-full sm:w-auto">
                 <CreditCard className="h-4 w-4 mr-2" />
@@ -605,7 +616,10 @@ export default function CoachingDashboard() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => router.push(`/dashboard/coaching/${coachingId}/attendance`)}
+          >
             <CardContent className="p-3 sm:p-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="p-1 sm:p-2 bg-blue-100 rounded-lg">
@@ -619,8 +633,8 @@ export default function CoachingDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-3 sm:p-6">
+          <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+            <div className="px-6 p-3 sm:p-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="p-1 sm:p-2 bg-green-100 rounded-lg">
                   <BookOpen className="h-4 w-4 sm:h-6 sm:w-6 text-green-600" />
@@ -630,28 +644,28 @@ export default function CoachingDashboard() {
                   <p className="text-lg sm:text-2xl font-bold text-brand-navy">{coachingInfo.avgScore}%</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="p-1 sm:p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-xs sm:text-sm text-gray-600">Study Hours</p>
-                  <p className="text-lg sm:text-2xl font-bold text-brand-navy">{coachingInfo.studyHours}h</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-3 sm:p-6">
+          <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+            <div className="px-6 p-3 sm:p-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="p-1 sm:p-2 bg-purple-100 rounded-lg">
-                  <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
+                  <Star className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-600">My Rank</p>
+                  <p className="text-lg sm:text-2xl font-bold text-brand-navy">#{coachingInfo.rank}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+            <div className="px-6 p-3 sm:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="p-1 sm:p-2 bg-orange-100 rounded-lg">
+                  <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-orange-600" />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs sm:text-sm text-gray-600">Next Test</p>
@@ -659,8 +673,8 @@ export default function CoachingDashboard() {
                   <Badge variant={mockUpcomingTests[0].type === 'online' ? 'secondary' : 'default'} className="text-xs">{mockUpcomingTests[0].type}</Badge>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Main Content Tabs */}

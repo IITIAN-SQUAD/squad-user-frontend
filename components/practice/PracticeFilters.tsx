@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ChevronDown, ChevronRight, Filter, Save, Trash2, BookmarkPlus } from "lucide-react"
+import { ChevronDown, ChevronRight, Filter, Save, Trash2, BookmarkPlus, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FilterState {
@@ -17,6 +17,7 @@ interface FilterState {
   years: string[]
   difficulty: string[]
   questionType: string[]
+  previousYearOnly: boolean
 }
 
 interface SavedFilter {
@@ -91,7 +92,8 @@ export default function PracticeFilters() {
     topics: [],
     years: [],
     difficulty: [],
-    questionType: []
+    questionType: [],
+    previousYearOnly: true
   })
   
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([
@@ -104,7 +106,8 @@ export default function PracticeFilters() {
         topics: ["Kinematics", "Dynamics"],
         years: ["2023", "2024"],
         difficulty: ["Medium", "Hard"],
-        questionType: ["Single Choice"]
+        questionType: ["Single Choice"],
+        previousYearOnly: true
       }
     },
     {
@@ -116,7 +119,8 @@ export default function PracticeFilters() {
         topics: ["Hydrocarbons", "Alcohols"],
         years: ["2022", "2023"],
         difficulty: ["Easy", "Medium"],
-        questionType: ["Multiple Choice"]
+        questionType: ["Multiple Choice"],
+        previousYearOnly: true
       }
     },
     {
@@ -128,7 +132,8 @@ export default function PracticeFilters() {
         topics: ["Derivatives", "Integrals"],
         years: ["2023", "2024"],
         difficulty: ["Hard"],
-        questionType: ["Integer Type"]
+        questionType: ["Integer Type"],
+        previousYearOnly: true
       }
     }
   ])
@@ -183,7 +188,8 @@ export default function PracticeFilters() {
       topics: [],
       years: [],
       difficulty: [],
-      questionType: []
+      questionType: [],
+      previousYearOnly: true
     })
   }
 
@@ -193,6 +199,28 @@ export default function PracticeFilters() {
 
   const deleteSavedFilter = (id: string) => {
     setSavedFilters(prev => prev.filter(f => f.id !== id))
+  }
+
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [newFilterName, setNewFilterName] = useState("")
+
+  const saveCurrentFilter = () => {
+    if (!newFilterName.trim()) return
+    
+    if (savedFilters.length >= 5) {
+      alert("You can save maximum 5 filters. Please delete an existing filter to save a new one.")
+      return
+    }
+
+    const newFilter: SavedFilter = {
+      id: Date.now().toString(),
+      name: newFilterName.trim(),
+      filters: { ...filters }
+    }
+
+    setSavedFilters(prev => [...prev, newFilter])
+    setNewFilterName("")
+    setShowSaveDialog(false)
   }
 
   return (
@@ -220,12 +248,62 @@ export default function PracticeFilters() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSavedFilters(prev => prev.filter(f => f.id !== savedFilter.id))}
+                onClick={() => deleteSavedFilter(savedFilter.id)}
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
             </div>
           ))}
+          
+          {/* Save New Filter Button */}
+          <Popover open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full border-dashed"
+                disabled={savedFilters.length >= 5}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Save Current Filter ({savedFilters.length}/5)
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-3">
+                <h4 className="font-medium">Save Filter</h4>
+                <input
+                  type="text"
+                  placeholder="Enter filter name..."
+                  value={newFilterName}
+                  onChange={(e) => setNewFilterName(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilter()}
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={saveCurrentFilter}
+                    disabled={!newFilterName.trim()}
+                    className="flex-1"
+                  >
+                    <Save className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setShowSaveDialog(false)
+                      setNewFilterName("")
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -350,6 +428,27 @@ export default function PracticeFilters() {
                         </label>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Previous Year Questions Filter */}
+                <div>
+                  <h4 className="font-medium mb-3">Question Source</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="previous-year-only"
+                        checked={filters.previousYearOnly}
+                        disabled={true}
+                        className="opacity-60"
+                      />
+                      <label htmlFor="previous-year-only" className="text-sm text-muted-foreground">
+                        Previous Year Questions Only (Default)
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground ml-6">
+                      This filter is always enabled to ensure you practice with authentic exam questions.
+                    </p>
                   </div>
                 </div>
 

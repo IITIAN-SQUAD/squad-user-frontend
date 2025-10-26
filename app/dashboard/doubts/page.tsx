@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import ComingSoon from "@/components/ui/ComingSoon";
+import { isFeatureEnabled } from "@/lib/features";
 
 interface Doubt {
   id: string;
@@ -104,6 +106,16 @@ const mockDoubts: Doubt[] = [
 ];
 
 export default function DoubtsPage() {
+  if (!isFeatureEnabled('doubts')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="Doubt Resolution Platform Coming Soon"
+        message="We're creating a collaborative doubt resolution platform where you can get instant help from IIT experts, connect with study groups, and participate in interactive learning sessions. Stay tuned!"
+      />
+    );
+  }
+
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "popular" | "unsolved">("recent");

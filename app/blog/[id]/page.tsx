@@ -29,7 +29,9 @@ import {
   ChevronDown,
   ChevronUp,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Flag,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +40,9 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface BlogPost {
   id: string;
@@ -317,8 +322,13 @@ export default function BlogDetailPage() {
   const [comments, setComments] = useState(mockComments);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false); // Collapsed by default
   const [commentSort, setCommentSort] = useState<'recent' | 'likes'>('recent');
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportType, setReportType] = useState('');
+  const [reportReason, setReportReason] = useState('');
+  const [reportTarget, setReportTarget] = useState<'post' | 'comment'>('post');
+  const [reportCommentId, setReportCommentId] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -382,6 +392,38 @@ export default function BlogDetailPage() {
       window.speechSynthesis.cancel();
       setIsPlaying(false);
     }
+  };
+
+  const handleReportPost = () => {
+    setReportTarget('post');
+    setReportCommentId(null);
+    setShowReportDialog(true);
+  };
+
+  const handleReportComment = (commentId: string) => {
+    setReportTarget('comment');
+    setReportCommentId(commentId);
+    setShowReportDialog(true);
+  };
+
+  const handleSubmitReport = () => {
+    // Handle report submission
+    console.log('Report submitted:', {
+      target: reportTarget,
+      commentId: reportCommentId,
+      type: reportType,
+      reason: reportReason
+    });
+    
+    // Reset and close
+    setShowReportDialog(false);
+    setReportType('');
+    setReportReason('');
+    setReportTarget('post');
+    setReportCommentId(null);
+    
+    // Show success message (you can add a toast notification here)
+    alert('Report submitted successfully. We will review it shortly.');
   };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -655,6 +697,15 @@ export default function BlogDetailPage() {
               >
                 <Share2 className="h-5 w-5" />
               </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReportPost}
+                className="text-gray-600 hover:text-red-600"
+              >
+                <Flag className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </header>
@@ -706,17 +757,102 @@ export default function BlogDetailPage() {
 
       {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          <div className="aspect-video bg-gradient-to-br from-brand/20 to-brand-navy/20 rounded-2xl mb-8 flex items-center justify-center">
+          <div className="aspect-video bg-gradient-to-br from-brand/20 to-brand-navy/20 rounded-2xl mb-12 flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="h-16 w-16 text-brand-navy mx-auto mb-4" />
               <p className="text-brand-navy font-semibold">Featured Article Cover</p>
             </div>
           </div>
           
-          <div className="text-lg leading-relaxed">
+          {/* Medium-style article content */}
+          <div className="article-content text-gray-800 leading-[1.8]" style={{
+            fontSize: '20px',
+            fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
+            lineHeight: '32px',
+            letterSpacing: '-0.003em'
+          }}>
             {renderContent(mockBlogPost.content)}
           </div>
         </div>
+        
+        <style jsx global>{`
+          .article-content h1 {
+            font-size: 32px;
+            line-height: 40px;
+            font-weight: 700;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            color: #1a202c;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content h2 {
+            font-size: 28px;
+            line-height: 36px;
+            font-weight: 700;
+            margin-top: 40px;
+            margin-bottom: 12px;
+            color: #1a202c;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content h3 {
+            font-size: 24px;
+            line-height: 32px;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content p {
+            margin-bottom: 24px;
+            color: #374151;
+          }
+          
+          .article-content ul, .article-content ol {
+            margin-bottom: 24px;
+            padding-left: 28px;
+          }
+          
+          .article-content li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+          }
+          
+          .article-content strong {
+            font-weight: 600;
+            color: #1f2937;
+          }
+          
+          .article-content a {
+            color: #FFBF00;
+            text-decoration: underline;
+            text-decoration-color: rgba(255, 191, 0, 0.4);
+            text-underline-offset: 2px;
+          }
+          
+          .article-content a:hover {
+            text-decoration-color: #FFBF00;
+          }
+          
+          .article-content code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-family: "Monaco", "Courier New", monospace;
+          }
+          
+          .article-content blockquote {
+            border-left: 4px solid #FFBF00;
+            padding-left: 20px;
+            margin: 32px 0;
+            font-style: italic;
+            color: #4b5563;
+          }
+        `}</style>
 
         {/* Tags */}
         <div className="mt-8 pt-6 border-t border-gray-200">
@@ -842,8 +978,14 @@ export default function BlogDetailPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem>Report</DropdownMenuItem>
-                          <DropdownMenuItem>Share</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleReportComment(comment.id)}>
+                            <Flag className="h-4 w-4 mr-2" />
+                            Report Comment
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -993,6 +1135,100 @@ export default function BlogDetailPage() {
           Back to all articles
         </Link>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Report {reportTarget === 'post' ? 'Article' : 'Comment'}
+            </DialogTitle>
+            <DialogDescription>
+              Help us maintain a safe and respectful community. Please select the reason for reporting this {reportTarget}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <Label htmlFor="report-type" className="text-base font-semibold">
+                Report Type *
+              </Label>
+              <RadioGroup value={reportType} onValueChange={setReportType}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="spam" id="spam" />
+                  <Label htmlFor="spam" className="font-normal cursor-pointer">
+                    Spam or misleading content
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inappropriate" id="inappropriate" />
+                  <Label htmlFor="inappropriate" className="font-normal cursor-pointer">
+                    Inappropriate or offensive content
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="harassment" id="harassment" />
+                  <Label htmlFor="harassment" className="font-normal cursor-pointer">
+                    Harassment or bullying
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="misinformation" id="misinformation" />
+                  <Label htmlFor="misinformation" className="font-normal cursor-pointer">
+                    False or misleading information
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="copyright" id="copyright" />
+                  <Label htmlFor="copyright" className="font-normal cursor-pointer">
+                    Copyright violation
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="other" id="other" />
+                  <Label htmlFor="other" className="font-normal cursor-pointer">
+                    Other
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="report-reason" className="text-base font-semibold">
+                Additional Details (Optional)
+              </Label>
+              <Textarea
+                id="report-reason"
+                placeholder="Please provide any additional context that might help us understand the issue..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Your report will be reviewed by our moderation team within 24 hours.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowReportDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitReport}
+              disabled={!reportType}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

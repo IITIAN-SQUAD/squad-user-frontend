@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ComingSoon from '@/components/ui/ComingSoon';
+import { isFeatureEnabled } from '@/lib/features';
 
 interface BlogPost {
   id: string;
@@ -139,10 +141,295 @@ const mockBlogPosts: BlogPost[] = [
     readTime: 7,
     category: 'Study Tips',
     tags: ['Time Management', 'Productivity', 'Study Tips', 'Efficiency'],
-    featured: false,
+    featured: true,
     views: 11200,
     likes: 567,
     coverImage: '/blog/time-management.jpg'
+  },
+  {
+    id: '7',
+    title: 'JEE Main 2024: Last Month Revision Strategy',
+    excerpt: 'Expert tips for the final month before JEE Main. Focus areas, revision techniques, and mock test strategies to maximize your score.',
+    content: '',
+    author: {
+      name: 'Rajesh Kumar',
+      avatar: '/avatars/rajesh.jpg',
+      bio: 'IIT Roorkee, JEE Mentor'
+    },
+    publishedAt: '2024-01-20',
+    readTime: 9,
+    category: 'JEE Strategy',
+    tags: ['JEE Main', 'Revision', 'Last Month', 'Strategy'],
+    featured: true,
+    views: 13500,
+    likes: 720,
+    coverImage: '/blog/jee-revision.jpg'
+  },
+  {
+    id: '8',
+    title: 'NEET Physics: Common Mistakes and How to Avoid Them',
+    excerpt: 'Identify and eliminate common mistakes in NEET Physics. Learn from toppers about calculation errors, concept gaps, and time management.',
+    content: '',
+    author: {
+      name: 'Dr. Meera Singh',
+      avatar: '/avatars/meera.jpg',
+      bio: 'JIPMER, Physics Expert'
+    },
+    publishedAt: '2024-01-18',
+    readTime: 10,
+    category: 'NEET Strategy',
+    tags: ['NEET', 'Physics', 'Mistakes', 'Tips'],
+    featured: true,
+    views: 9800,
+    likes: 445,
+    coverImage: '/blog/neet-physics.jpg'
+  },
+  {
+    id: '9',
+    title: 'Calculus Mastery: From Basics to Advanced',
+    excerpt: 'Complete guide to mastering calculus for JEE. Limits, derivatives, integration, and differential equations explained with examples.',
+    content: '',
+    author: {
+      name: 'Prof. Arun Verma',
+      avatar: '/avatars/arun.jpg',
+      bio: 'IIT Delhi, Mathematics Professor'
+    },
+    publishedAt: '2024-01-16',
+    readTime: 18,
+    category: 'Mathematics',
+    tags: ['Calculus', 'Mathematics', 'JEE', 'Advanced'],
+    featured: false,
+    views: 7200,
+    likes: 380,
+    coverImage: '/blog/calculus.jpg'
+  },
+  {
+    id: '10',
+    title: 'Chemistry Inorganic: Periodic Table Trends Simplified',
+    excerpt: 'Master periodic table trends and inorganic chemistry concepts. Visual learning techniques and memory tricks for better retention.',
+    content: '',
+    author: {
+      name: 'Kavita Reddy',
+      avatar: '/avatars/kavita.jpg',
+      bio: 'IIT Hyderabad, Chemistry Researcher'
+    },
+    publishedAt: '2024-01-14',
+    readTime: 12,
+    category: 'Chemistry',
+    tags: ['Inorganic', 'Periodic Table', 'Chemistry', 'Trends'],
+    featured: false,
+    views: 6500,
+    likes: 295,
+    coverImage: '/blog/inorganic.jpg'
+  },
+  {
+    id: '11',
+    title: 'Study Motivation: Staying Consistent for 2 Years',
+    excerpt: 'Psychological strategies to maintain motivation throughout your JEE/NEET preparation journey. Deal with burnout and stay focused.',
+    content: '',
+    author: {
+      name: 'Dr. Sanjay Mehta',
+      avatar: '/avatars/sanjay.jpg',
+      bio: 'Educational Psychologist'
+    },
+    publishedAt: '2024-01-11',
+    readTime: 8,
+    category: 'Study Tips',
+    tags: ['Motivation', 'Psychology', 'Consistency', 'Mental Health'],
+    featured: false,
+    views: 10500,
+    likes: 612,
+    coverImage: '/blog/motivation.jpg'
+  },
+  {
+    id: '12',
+    title: 'Physics Mechanics: Problem-Solving Approach',
+    excerpt: 'Step-by-step approach to solving mechanics problems. Free body diagrams, equations of motion, and energy conservation principles.',
+    content: '',
+    author: {
+      name: 'Arjun Nair',
+      avatar: '/avatars/arjun.jpg',
+      bio: 'IIT Bombay, Mechanical Engineering'
+    },
+    publishedAt: '2024-01-09',
+    readTime: 14,
+    category: 'Physics',
+    tags: ['Mechanics', 'Physics', 'Problem Solving', 'JEE'],
+    featured: false,
+    views: 8100,
+    likes: 390,
+    coverImage: '/blog/mechanics.jpg'
+  },
+  {
+    id: '13',
+    title: 'NEET Biology: High-Yield Topics for 2024',
+    excerpt: 'Focus on high-yield biology topics that frequently appear in NEET. Chapter-wise weightage analysis and preparation strategy.',
+    content: '',
+    author: {
+      name: 'Dr. Neha Kapoor',
+      avatar: '/avatars/neha.jpg',
+      bio: 'AIIMS Delhi, Biology Faculty'
+    },
+    publishedAt: '2024-01-07',
+    readTime: 11,
+    category: 'NEET Strategy',
+    tags: ['NEET', 'Biology', 'High Yield', 'Strategy'],
+    featured: false,
+    views: 9200,
+    likes: 478,
+    coverImage: '/blog/biology-topics.jpg'
+  },
+  {
+    id: '14',
+    title: 'Mathematics Coordinate Geometry: Complete Guide',
+    excerpt: 'Master coordinate geometry with comprehensive coverage of straight lines, circles, parabola, ellipse, and hyperbola.',
+    content: '',
+    author: {
+      name: 'Suresh Iyer',
+      avatar: '/avatars/suresh.jpg',
+      bio: 'IIT Madras, Mathematics Expert'
+    },
+    publishedAt: '2024-01-06',
+    readTime: 16,
+    category: 'Mathematics',
+    tags: ['Coordinate Geometry', 'Mathematics', 'JEE', 'Conic Sections'],
+    featured: false,
+    views: 7800,
+    likes: 365,
+    coverImage: '/blog/coordinate-geometry.jpg'
+  },
+  {
+    id: '15',
+    title: 'Chemistry Physical: Thermodynamics Made Easy',
+    excerpt: 'Understand thermodynamics concepts with real-world examples. Laws, processes, and numerical problem-solving techniques.',
+    content: '',
+    author: {
+      name: 'Pooja Desai',
+      avatar: '/avatars/pooja.jpg',
+      bio: 'IIT Kanpur, Physical Chemistry'
+    },
+    publishedAt: '2024-01-04',
+    readTime: 13,
+    category: 'Chemistry',
+    tags: ['Thermodynamics', 'Physical Chemistry', 'JEE', 'Concepts'],
+    featured: false,
+    views: 6200,
+    likes: 278,
+    coverImage: '/blog/thermodynamics.jpg'
+  },
+  {
+    id: '16',
+    title: 'Exam Day Strategy: What to Do and What to Avoid',
+    excerpt: 'Complete guide for exam day preparation. From morning routine to paper-solving strategy, learn what works best.',
+    content: '',
+    author: {
+      name: 'Ravi Shankar',
+      avatar: '/avatars/ravi.jpg',
+      bio: 'IIT Delhi, Career Counselor'
+    },
+    publishedAt: '2024-01-02',
+    readTime: 6,
+    category: 'Study Tips',
+    tags: ['Exam Day', 'Strategy', 'Tips', 'Preparation'],
+    featured: false,
+    views: 12800,
+    likes: 695,
+    coverImage: '/blog/exam-day.jpg'
+  },
+  {
+    id: '17',
+    title: 'JEE Advanced Mathematics: Tough Problems Decoded',
+    excerpt: 'Learn to tackle the toughest JEE Advanced mathematics problems. Pattern recognition and advanced problem-solving techniques.',
+    content: '',
+    author: {
+      name: 'Karthik Subramanian',
+      avatar: '/avatars/karthik.jpg',
+      bio: 'IIT Bombay, AIR 12 JEE Advanced'
+    },
+    publishedAt: '2024-01-01',
+    readTime: 20,
+    category: 'Mathematics',
+    tags: ['JEE Advanced', 'Mathematics', 'Tough Problems', 'Solutions'],
+    featured: false,
+    views: 9500,
+    likes: 512,
+    coverImage: '/blog/tough-math.jpg'
+  },
+  {
+    id: '18',
+    title: 'NEET Chemistry: Organic Reactions Flowchart',
+    excerpt: 'Visual flowcharts for all important organic reactions. Quick revision tool for NEET chemistry preparation.',
+    content: '',
+    author: {
+      name: 'Dr. Anjali Rao',
+      avatar: '/avatars/anjali.jpg',
+      bio: 'CMC Vellore, Organic Chemistry'
+    },
+    publishedAt: '2023-12-30',
+    readTime: 9,
+    category: 'Chemistry',
+    tags: ['NEET', 'Organic Chemistry', 'Flowchart', 'Revision'],
+    featured: false,
+    views: 8700,
+    likes: 425,
+    coverImage: '/blog/organic-flowchart.jpg'
+  },
+  {
+    id: '19',
+    title: 'Physics Electromagnetism: Concept Building',
+    excerpt: 'Build strong foundation in electromagnetism. From basic concepts to advanced applications with solved examples.',
+    content: '',
+    author: {
+      name: 'Deepak Sharma',
+      avatar: '/avatars/deepak.jpg',
+      bio: 'IIT Roorkee, Physics Faculty'
+    },
+    publishedAt: '2023-12-28',
+    readTime: 15,
+    category: 'Physics',
+    tags: ['Electromagnetism', 'Physics', 'Concepts', 'JEE'],
+    featured: false,
+    views: 7400,
+    likes: 348,
+    coverImage: '/blog/electromagnetism.jpg'
+  },
+  {
+    id: '20',
+    title: 'Mock Test Analysis: How to Learn from Mistakes',
+    excerpt: 'Effective mock test analysis techniques. Identify patterns in mistakes and create targeted improvement plans.',
+    content: '',
+    author: {
+      name: 'Priyanka Joshi',
+      avatar: '/avatars/priyanka.jpg',
+      bio: 'IIT Kharagpur, Test Prep Expert'
+    },
+    publishedAt: '2023-12-26',
+    readTime: 10,
+    category: 'Study Tips',
+    tags: ['Mock Tests', 'Analysis', 'Improvement', 'Strategy'],
+    featured: false,
+    views: 11500,
+    likes: 638,
+    coverImage: '/blog/mock-analysis.jpg'
+  },
+  {
+    id: '21',
+    title: 'JEE Chemistry: Important Name Reactions',
+    excerpt: 'Complete list of important name reactions for JEE. Mechanisms, conditions, and applications explained clearly.',
+    content: '',
+    author: {
+      name: 'Vivek Agarwal',
+      avatar: '/avatars/vivek.jpg',
+      bio: 'IIT Delhi, Organic Chemistry Expert'
+    },
+    publishedAt: '2023-12-24',
+    readTime: 14,
+    category: 'Chemistry',
+    tags: ['Name Reactions', 'JEE', 'Chemistry', 'Organic'],
+    featured: false,
+    views: 6900,
+    likes: 315,
+    coverImage: '/blog/name-reactions.jpg'
   }
 ];
 
@@ -156,15 +443,26 @@ const topBlogs = [
   { id: '4', title: 'Physics Concepts Made Simple', views: 7650, category: 'Physics' }
 ];
 
-const POSTS_PER_PAGE = 6;
+const POSTS_PER_PAGE = 10;
 
 export default function BlogPage() {
+  if (!isFeatureEnabled('blog')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="Blog Coming Soon"
+        message="We're preparing insightful articles, exam strategies, study tips, and success stories from top performers. Our blog will be your go-to resource for exam preparation guidance!"
+      />
+    );
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [filteredPosts, setFilteredPosts] = useState(mockBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
-  const [featuredDisplayCount, setFeaturedDisplayCount] = useState(2);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
   const [email, setEmail] = useState('');
+  const [sortBy, setSortBy] = useState<'latest' | 'mostLiked' | 'mostCommented' | 'mostViewed'>('latest');
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -195,8 +493,14 @@ export default function BlogPage() {
     setCurrentPage(1); // Reset to first page when filtering
   };
 
-  const handleLoadMoreFeatured = () => {
-    setFeaturedDisplayCount(prev => Math.min(prev + 2, featuredPosts.length));
+  const handleNextFeatured = () => {
+    const featuredPosts = filteredPosts.filter(post => post.featured);
+    setFeaturedIndex(prev => (prev + 2 >= featuredPosts.length ? 0 : prev + 2));
+  };
+
+  const handlePrevFeatured = () => {
+    const featuredPosts = filteredPosts.filter(post => post.featured);
+    setFeaturedIndex(prev => (prev - 2 < 0 ? Math.max(0, featuredPosts.length - 2) : prev - 2));
   };
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -208,14 +512,29 @@ export default function BlogPage() {
   };
 
   const featuredPosts = filteredPosts.filter(post => post.featured);
-  const regularPosts = filteredPosts.filter(post => !post.featured);
+  let regularPosts = filteredPosts.filter(post => !post.featured);
+  
+  // Sort posts based on selected filter
+  regularPosts = [...regularPosts].sort((a, b) => {
+    switch (sortBy) {
+      case 'mostLiked':
+        return b.likes - a.likes;
+      case 'mostCommented':
+        return 0; // Will implement when comments are added
+      case 'mostViewed':
+        return b.views - a.views;
+      case 'latest':
+      default:
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    }
+  });
   
   // Pagination logic
   const totalPages = Math.ceil(regularPosts.length / POSTS_PER_PAGE);
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
   const paginatedPosts = regularPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
   
-  const displayedFeaturedPosts = featuredPosts.slice(0, featuredDisplayCount);
+  const displayedFeaturedPosts = featuredPosts.slice(featuredIndex, featuredIndex + 2);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -301,15 +620,25 @@ export default function BlogPage() {
                     <Star className="h-6 w-6 text-brand mr-2" />
                     <h2 className="text-2xl font-bold text-brand-navy">Featured Articles</h2>
                   </div>
-                  {featuredDisplayCount < featuredPosts.length && (
-                    <Button 
-                      onClick={handleLoadMoreFeatured}
-                      variant="outline" 
-                      size="sm"
-                      className="border-brand text-brand hover:bg-brand hover:text-brand-navy"
-                    >
-                      Load More
-                    </Button>
+                  {featuredPosts.length > 2 && (
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        onClick={handlePrevFeatured}
+                        variant="outline" 
+                        size="sm"
+                        className="border-brand text-brand hover:bg-brand hover:text-brand-navy"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        onClick={handleNextFeatured}
+                        variant="outline" 
+                        size="sm"
+                        className="border-brand text-brand hover:bg-brand hover:text-brand-navy"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
                 </div>
                 
@@ -356,9 +685,40 @@ export default function BlogPage() {
             <section>
               {paginatedPosts.length > 0 && (
                 <>
-                  <div className="flex items-center mb-6">
-                    <BookOpen className="h-6 w-6 text-brand-navy mr-2" />
-                    <h2 className="text-2xl font-bold text-brand-navy">Latest Articles</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <BookOpen className="h-6 w-6 text-brand-navy mr-2" />
+                      <h2 className="text-2xl font-bold text-brand-navy">Latest Articles</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 hidden sm:block">Sort by:</span>
+                      <div className="flex gap-1">
+                        <Button
+                          variant={sortBy === 'latest' ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setSortBy('latest')}
+                          className={sortBy === 'latest' ? 'bg-brand text-brand-navy hover:bg-brand/90' : 'text-gray-600'}
+                        >
+                          Latest
+                        </Button>
+                        <Button
+                          variant={sortBy === 'mostViewed' ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setSortBy('mostViewed')}
+                          className={sortBy === 'mostViewed' ? 'bg-brand text-brand-navy hover:bg-brand/90' : 'text-gray-600'}
+                        >
+                          Most Viewed
+                        </Button>
+                        <Button
+                          variant={sortBy === 'mostLiked' ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setSortBy('mostLiked')}
+                          className={sortBy === 'mostLiked' ? 'bg-brand text-brand-navy hover:bg-brand/90' : 'text-gray-600'}
+                        >
+                          Most Liked
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -401,42 +761,75 @@ export default function BlogPage() {
                   
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-center space-x-2 mt-8">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="flex items-center"
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-                      
-                      <div className="flex items-center space-x-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={currentPage === page ? "bg-brand text-brand-navy" : ""}
-                          >
-                            {page}
-                          </Button>
-                        ))}
+                    <div className="flex flex-col items-center gap-4 mt-8">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="flex items-center"
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-1" />
+                          Previous
+                        </Button>
+                        
+                        <div className="flex items-center space-x-1">
+                          {/* Show first page */}
+                          {currentPage > 3 && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(1)}
+                              >
+                                1
+                              </Button>
+                              {currentPage > 4 && <span className="px-2">...</span>}
+                            </>
+                          )}
+                          
+                          {/* Show pages around current page */}
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
+                            .map((page) => (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className={currentPage === page ? "bg-brand text-brand-navy hover:bg-brand/90" : ""}
+                              >
+                                {page}
+                              </Button>
+                            ))}
+                          
+                          {/* Show last page */}
+                          {currentPage < totalPages - 2 && (
+                            <>
+                              {currentPage < totalPages - 3 && <span className="px-2">...</span>}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(totalPages)}
+                              >
+                                {totalPages}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center"
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
                       </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
                     </div>
                   )}
                 </>
