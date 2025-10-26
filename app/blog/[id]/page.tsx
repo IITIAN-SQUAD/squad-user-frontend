@@ -91,6 +91,12 @@ interface Comment {
   replies?: Comment[];
 }
 
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
 const mockBlogPost: BlogPost = {
   id: '1',
   title: 'How to Crack JEE Advanced: A Complete Strategy Guide by IIT Toppers',
@@ -460,7 +466,7 @@ export default function BlogDetailPage() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<{[key: number]: string}>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   
   const COMMENTS_PER_PAGE = 10;
@@ -649,7 +655,7 @@ export default function BlogDetailPage() {
   const totalCommentPages = Math.ceil(comments.length / COMMENTS_PER_PAGE);
 
   // Quiz data based on article content
-  const articleQuiz = [
+  const articleQuiz: QuizQuestion[] = [
     {
       question: "What is the most important factor in cracking JEE Advanced according to the article?",
       options: [
@@ -711,7 +717,7 @@ export default function BlogDetailPage() {
     const currentCount = quizQuestions.length;
     
     // Mock generated questions (in real implementation, these would be from LLM)
-    const questionBank = [
+    const questionBank: QuizQuestion[] = [
       {
         question: "What is the recommended approach for solving numerical problems in JEE Advanced?",
         options: [
@@ -816,7 +822,7 @@ export default function BlogDetailPage() {
     
     // Select next 5 questions from the bank (cycling through)
     const startIndex = (currentCount - 4) % questionBank.length;
-    const newQuestions = [];
+    const newQuestions: QuizQuestion[] = [];
     for (let i = 0; i < 5; i++) {
       const index = (startIndex + i) % questionBank.length;
       newQuestions.push(questionBank[index]);
@@ -1563,7 +1569,7 @@ export default function BlogDetailPage() {
                         {qIndex + 1}. {q.question}
                       </h4>
                       <div className="space-y-2">
-                        {q.options.map((option, oIndex) => (
+                        {q.options.map((option: string, oIndex: number) => (
                           <button
                             key={oIndex}
                             onClick={() => handleQuizAnswer(qIndex, oIndex)}
@@ -1638,7 +1644,7 @@ export default function BlogDetailPage() {
                                 {qIndex + 1}. {q.question}
                               </h4>
                               <div className="space-y-2">
-                                {q.options.map((option, oIndex) => {
+                                {q.options.map((option: string, oIndex: number) => {
                                   const isUserAnswer = userAnswer === oIndex;
                                   const isCorrectAnswer = q.correctAnswer === oIndex;
                                   
