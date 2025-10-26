@@ -12,8 +12,20 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
 import { useState } from "react";
+import ComingSoon from "@/components/ui/ComingSoon";
+import { isFeatureEnabled } from "@/lib/features";
 
 export default function PYQPage() {
+  if (!isFeatureEnabled('pyq')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="PYQ Papers Coming Soon"
+        message="We're preparing a comprehensive collection of previous year question papers with exam-like interface, detailed solutions, and performance analysis. This feature will be live soon!"
+      />
+    );
+  }
+
   const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc' | 'desc'} | null>(null);
   
   // Example PYQ data - would come from API in real app

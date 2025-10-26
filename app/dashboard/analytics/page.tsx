@@ -4,8 +4,20 @@ import ActivityHeatmap from "@/components/analytics/ActivityHeatmap";
 import CoverageAnalysis from "@/components/analytics/CoverageAnalysis";
 import PerformanceAnalytics from "@/components/analytics/PerformanceAnalytics";
 import RecallAnalytics from "@/components/analytics/RecallAnalytics";
+import ComingSoon from "@/components/ui/ComingSoon";
+import { isFeatureEnabled } from "@/lib/features";
 
 export default function AnalyticsPage() {
+  if (!isFeatureEnabled('analytics')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="Analytics Dashboard Coming Soon"
+        message="We're building a comprehensive analytics platform to track your performance, identify weak areas, and provide personalized insights. This feature will be available soon!"
+      />
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 space-y-6 max-w-full overflow-hidden">

@@ -84,7 +84,7 @@ const PdfViewer = ({ material }: { material: Material }) => {
         </div>
       </CardHeader>
       <CardContent className="p-0 border-t">
-        <div className="w-full h-[75vh] bg-gray-100 flex items-center justify-center overflow-hidden">
+        <div className="w-full h-[75vh] bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
           <iframe src={material.url} title={material.title} className="w-full h-full" style={{ transform: `scale(${zoom/100})`, transformOrigin: 'center' }} />
         </div>
       </CardContent>
@@ -104,7 +104,7 @@ const NotesViewer = ({ material }: { material: Material }) => (
   <Card>
     <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
     <CardContent>
-      <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: material.content?.replace(/\\n/g, '') || '' }} />
+      <div className="prose prose-sm max-w-none text-gray-800 dark:text-gray-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: material.content?.replace(/\\n/g, '') || '' }} />
     </CardContent>
   </Card>
 );
@@ -299,18 +299,18 @@ export default function MaterialViewerPage() {
                 
                 {existingNotes.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Your Notes ({existingNotes.length}):</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Notes ({existingNotes.length}):</p>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {existingNotes.map((note) => (
                         <div 
                           key={note.id}
-                          className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-brand/10 transition-colors border border-transparent hover:border-brand/20"
+                          className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-brand/10 dark:hover:bg-brand/20 transition-colors border border-transparent hover:border-brand/20"
                           onClick={() => selectExistingNote(note)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-brand-navy truncate">{note.title}</p>
-                              <p className="text-xs text-gray-600 line-clamp-2 mt-1">{note.content.replace(/<[^>]*>/g, '')}</p>
+                              <p className="font-medium text-sm text-brand-navy dark:text-gray-200 truncate">{note.title}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{note.content.replace(/<[^>]*>/g, '')}</p>
                             </div>
                             <FileText className="h-4 w-4 text-brand ml-2 flex-shrink-0" />
                           </div>
@@ -322,9 +322,9 @@ export default function MaterialViewerPage() {
                 
                 {existingNotes.length === 0 && (
                   <div className="text-center py-4">
-                    <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">No notes yet</p>
-                    <p className="text-xs text-gray-400">Create your first note to get started</p>
+                    <FileText className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No notes yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Create your first note to get started</p>
                   </div>
                 )}
               </CardContent>
@@ -335,7 +335,7 @@ export default function MaterialViewerPage() {
         {/* Floating Note Card */}
         {showFloatingNote && (
           <div 
-            className="fixed bg-white border border-gray-300 rounded-lg shadow-lg z-50 w-80 sm:w-96"
+            className="fixed bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 w-80 sm:w-96"
             style={{ 
               left: `${Math.min(floatingNotePosition.x, window.innerWidth - 320)}px`, 
               top: `${Math.min(floatingNotePosition.y, window.innerHeight - 400)}px`,
@@ -344,10 +344,10 @@ export default function MaterialViewerPage() {
           >
             {/* Draggable Header */}
             <div 
-              className="bg-gray-50 border-b border-gray-200 p-2 sm:p-3 cursor-move flex items-center justify-between rounded-t-lg"
+              className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 p-2 sm:p-3 cursor-move flex items-center justify-between rounded-t-lg"
               onMouseDown={handleMouseDown}
             >
-              <h3 className="font-medium text-brand-navy text-sm sm:text-base">
+              <h3 className="font-medium text-brand-navy dark:text-gray-200 text-sm sm:text-base">
                 {selectedNoteId ? 'Edit Note' : 'Add Note'}
               </h3>
               <Button 
@@ -380,7 +380,7 @@ export default function MaterialViewerPage() {
             </div>
 
             {/* Footer with Actions */}
-            <div className="border-t border-gray-200 p-2 sm:p-3 flex justify-end space-x-2 rounded-b-lg bg-gray-50">
+            <div className="border-t border-gray-200 dark:border-gray-600 p-2 sm:p-3 flex justify-end space-x-2 rounded-b-lg bg-gray-50 dark:bg-gray-800">
               <Button 
                 variant="outline" 
                 size="sm" 

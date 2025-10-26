@@ -28,6 +28,8 @@ import {
   Crown,
   Lock
 } from "lucide-react";
+import ComingSoon from "@/components/ui/ComingSoon";
+import { isFeatureEnabled } from "@/lib/features";
 
 interface WeakArea {
   subject: string;
@@ -66,6 +68,16 @@ interface StudySession {
 }
 
 export default function CoachingPage() {
+  if (!isFeatureEnabled('coaching')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="AI Coaching Coming Soon"
+        message="We're developing an advanced AI coaching system that will provide personalized study plans, identify your weak areas, and offer strategic guidance to help you excel. This feature will be available soon!"
+      />
+    );
+  }
+
   const [selectedWeakArea, setSelectedWeakArea] = useState<WeakArea | null>(null);
   const [activeTab, setActiveTab] = useState("analysis");
 
