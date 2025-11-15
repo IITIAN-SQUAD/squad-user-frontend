@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '../../../components/layout/MainLayout';
@@ -38,7 +38,10 @@ import {
   Award,
   Sparkles,
   Loader2,
-  X as CloseIcon
+  X as CloseIcon,
+  List,
+  RotateCcw,
+  Square
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -450,6 +453,7 @@ export default function BlogDetailPage() {
   const [likes, setLikes] = useState(mockBlogPost.likes);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasAudioStarted, setHasAudioStarted] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState(mockComments);
@@ -468,8 +472,158 @@ export default function BlogDetailPage() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
+  const [showTOC, setShowTOC] = useState(true);
+  const [isTOCVisible, setIsTOCVisible] = useState(true);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tocRef = useRef<HTMLDivElement>(null);
+  const isClickScrolling = useRef(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const articleEndRef = useRef<HTMLDivElement>(null);
   
   const COMMENTS_PER_PAGE = 10;
+
+  // Extract headings for Table of Contents
+  const extractHeadings = (content: string) => {
+    const lines = content.trim().split('\n');
+    const headings: { id: string; text: string; level: number }[] = [];
+    
+    lines.forEach((line, index) => {
+      if (line.startsWith('# ')) {
+        const text = line.substring(2).trim();
+        headings.push({ id: `heading-${index}`, text, level: 1 });
+      } else if (line.startsWith('## ')) {
+        const text = line.substring(3).trim();
+        headings.push({ id: `heading-${index}`, text, level: 2 });
+      } else if (line.startsWith('### ')) {
+        const text = line.substring(4).trim();
+        headings.push({ id: `heading-${index}`, text, level: 3 });
+      }
+    });
+    
+    return headings;
+  };
+
+  const tableOfContents = extractHeadings(mockBlogPost.content);
+
+  // Scroll to section
+  const scrollToSection = (id: string) => {
+    // Set flag to prevent scroll handler from interfering
+    isClickScrolling.current = true;
+    
+    // Immediately update active section
+    setActiveSection(id);
+    
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 120; // Offset for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      
+      // Auto-scroll TOC to show active item
+      setTimeout(() => {
+        if (tocRef.current) {
+          const activeButton = tocRef.current.querySelector(`button[data-heading-id="${id}"]`);
+          if (activeButton) {
+            activeButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 100);
+      
+      // Reset flag after scroll completes
+      setTimeout(() => {
+        isClickScrolling.current = false;
+      }, 1000);
+    }
+  };
+
+  // Track active section on scroll and auto-scroll TOC
+  useEffect(() => {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      // Skip if user just clicked on TOC
+      if (isClickScrolling.current) {
+        return;
+      }
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const headingElements = tableOfContents.map(h => ({
+            id: h.id,
+            element: document.getElementById(h.id)
+          }));
+          
+          // Get viewport top position with offset
+          const scrollPosition = window.scrollY + 200;
+
+          // Find the current active section
+          let currentSection = '';
+          for (let i = 0; i < headingElements.length; i++) {
+            const { id, element } = headingElements[i];
+            if (element) {
+              const elementTop = element.offsetTop;
+              
+              // Check if this heading is in view
+              if (elementTop <= scrollPosition) {
+                currentSection = id;
+              } else {
+                break;
+              }
+            }
+          }
+
+          // Update active section if changed
+          if (currentSection && currentSection !== activeSection) {
+            setActiveSection(currentSection);
+            
+            // Auto-scroll TOC to show active item
+            if (tocRef.current) {
+              const activeButton = tocRef.current.querySelector(`button[data-heading-id="${currentSection}"]`);
+              if (activeButton) {
+                activeButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          }
+          
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection, tableOfContents]);
+
+  // Hide TOC when scrolling past article content
+  useEffect(() => {
+    const handleTOCVisibility = () => {
+      if (articleEndRef.current) {
+        const articleEnd = articleEndRef.current.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        // Hide TOC when article end is above viewport (user scrolled past it)
+        if (articleEnd < windowHeight * 0.3) {
+          setIsTOCVisible(false);
+        } else {
+          setIsTOCVisible(true);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleTOCVisibility, { passive: true });
+    handleTOCVisibility(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleTOCVisibility);
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -512,27 +666,85 @@ export default function BlogDetailPage() {
     if (isPlaying) {
       // Pause text-to-speech
       window.speechSynthesis.pause();
+      setIsPlaying(false);
     } else {
-      // Start text-to-speech
-      const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = isMuted ? 0 : 1;
-      
-      utterance.onend = () => setIsPlaying(false);
-      utterance.onerror = () => setIsPlaying(false);
-      
-      window.speechSynthesis.speak(utterance);
+      // Check if already paused, resume it
+      if (window.speechSynthesis.paused && hasAudioStarted) {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      } else {
+        // Start new text-to-speech
+        // Clear any existing speech first (before setting states)
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+        }
+        
+        const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = isMuted ? 0 : 1;
+        
+        utterance.onstart = () => {
+          // Set states when audio actually starts
+          setHasAudioStarted(true);
+          setIsPlaying(true);
+        };
+        
+        utterance.onend = () => {
+          setIsPlaying(false);
+          setHasAudioStarted(false);
+          utteranceRef.current = null;
+        };
+        
+        utterance.onerror = (error) => {
+          // Ignore errors from cancel() - they're expected
+          if (error.error !== 'canceled' && error.error !== 'interrupted') {
+            console.error('Audio error:', error);
+          }
+        };
+        
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+      }
     }
-    setIsPlaying(!isPlaying);
   };
 
-  const handleMute = () => {
-    setIsMuted(!isMuted);
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
+  const handleRestart = () => {
+    // Stop current playback
+    window.speechSynthesis.cancel();
+    
+    // Start from beginning
+    const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = isMuted ? 0 : 1;
+    
+    utterance.onstart = () => {
+      setHasAudioStarted(true);
+      setIsPlaying(true);
+    };
+    
+    utterance.onend = () => {
       setIsPlaying(false);
-    }
+      setHasAudioStarted(false);
+      utteranceRef.current = null;
+    };
+    
+    utterance.onerror = (error) => {
+      if (error.error !== 'canceled' && error.error !== 'interrupted') {
+        console.error('Audio error:', error);
+      }
+    };
+    
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleStop = () => {
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    setHasAudioStarted(false);
+    utteranceRef.current = null;
   };
 
   const handleReportPost = () => {
@@ -873,19 +1085,19 @@ export default function BlogDetailPage() {
     lines.forEach((line, index) => {
       if (line.startsWith('# ')) {
         elements.push(
-          <h1 key={index} className="text-3xl font-bold text-brand-navy mb-6 mt-8">
+          <h1 key={index} id={`heading-${index}`} className="text-3xl font-bold text-brand-navy mb-6 mt-8 scroll-mt-24">
             {line.substring(2)}
           </h1>
         );
       } else if (line.startsWith('## ')) {
         elements.push(
-          <h2 key={index} className="text-2xl font-bold text-brand-navy mb-4 mt-8">
+          <h2 key={index} id={`heading-${index}`} className="text-2xl font-bold text-brand-navy mb-4 mt-8 scroll-mt-24">
             {line.substring(3)}
           </h2>
         );
       } else if (line.startsWith('### ')) {
         elements.push(
-          <h3 key={index} className="text-xl font-semibold text-brand-navy mb-3 mt-6">
+          <h3 key={index} id={`heading-${index}`} className="text-xl font-semibold text-brand-navy mb-3 mt-6 scroll-mt-24">
             {line.substring(4)}
           </h3>
         );
@@ -1029,17 +1241,6 @@ export default function BlogDetailPage() {
             </div>
             
             <div className="flex items-center space-x-2">
-              {isPlaying && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMute}
-                  className={`${isMuted ? 'text-red-500' : 'text-gray-600'}`}
-                >
-                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                </Button>
-              )}
-              
               <Button
                 variant="ghost"
                 size="sm"
@@ -1093,21 +1294,46 @@ export default function BlogDetailPage() {
       )}
 
       {/* Audio Player Info */}
-      {isPlaying && (
+      {hasAudioStarted && (
         <Card className="mb-8 border-brand/20 bg-brand/5">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">
               <Headphones className="h-5 w-5 text-brand" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-brand-navy">Audio Playback Active</p>
-                <p className="text-xs text-gray-600">Article is being read aloud. Use controls to pause or adjust volume.</p>
+                <p className="text-sm font-medium text-brand-navy">
+                  {isPlaying ? 'Audio Playback Active' : 'Audio Paused'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {isPlaying 
+                    ? 'Article is being read aloud.' 
+                    : 'Paused - Click play to resume from where you left off.'}
+                </p>
               </div>
               <div className="flex items-center space-x-2">
-                <Button size="sm" variant="outline" onClick={handlePlayPause}>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handlePlayPause}
+                  title={isPlaying ? 'Pause' : 'Resume'}
+                >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleMute}>
-                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleRestart}
+                  title="Restart from beginning"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleStop} 
+                  title="Stop"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Square className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -1115,8 +1341,110 @@ export default function BlogDetailPage() {
         </Card>
       )}
 
+      {/* Main Content with TOC */}
+      <div className="relative">
+        {/* Table of Contents - Desktop Sidebar */}
+        {tableOfContents.length > 0 && isTOCVisible && (
+          <div className="hidden xl:block">
+            <div className="fixed top-32 right-8 w-64 max-h-[calc(100vh-200px)] overflow-y-auto transition-opacity duration-300" ref={tocRef}>
+              <Card className="border-brand/20">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold text-brand-navy flex items-center">
+                      <List className="h-4 w-4 mr-2" />
+                      Table of Contents
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTOC(!showTOC)}
+                      className="h-6 w-6 p-0"
+                    >
+                      {showTOC ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </CardHeader>
+                {showTOC && (
+                  <CardContent className="pt-0">
+                    <nav className="space-y-1">
+                      {tableOfContents.map((heading) => (
+                        <button
+                          key={heading.id}
+                          data-heading-id={heading.id}
+                          onClick={() => scrollToSection(heading.id)}
+                          className={`
+                            w-full text-left text-sm py-1.5 px-2 rounded transition-colors
+                            ${heading.level === 1 ? 'font-semibold' : ''}
+                            ${heading.level === 2 ? 'pl-4 font-medium' : ''}
+                            ${heading.level === 3 ? 'pl-6 text-xs' : ''}
+                            ${activeSection === heading.id 
+                              ? 'bg-brand text-brand-navy font-semibold' 
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-brand-navy'
+                            }
+                          `}
+                        >
+                          {heading.text}
+                        </button>
+                      ))}
+                    </nav>
+                  </CardContent>
+                )}
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile TOC */}
+        {tableOfContents.length > 0 && (
+          <div className="xl:hidden mb-6">
+            <Card className="border-brand/20">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold text-brand-navy flex items-center">
+                    <List className="h-4 w-4 mr-2" />
+                    Table of Contents
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowTOC(!showTOC)}
+                    className="h-6 w-6 p-0"
+                  >
+                    {showTOC ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+              {showTOC && (
+                <CardContent className="pt-0">
+                  <nav className="space-y-1">
+                    {tableOfContents.map((heading) => (
+                      <button
+                        key={heading.id}
+                        data-heading-id={heading.id}
+                        onClick={() => scrollToSection(heading.id)}
+                        className={`
+                          w-full text-left text-sm py-1.5 px-2 rounded transition-colors
+                          ${heading.level === 1 ? 'font-semibold' : ''}
+                          ${heading.level === 2 ? 'pl-4 font-medium' : ''}
+                          ${heading.level === 3 ? 'pl-6 text-xs' : ''}
+                          ${activeSection === heading.id 
+                            ? 'bg-brand text-brand-navy font-semibold' 
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-brand-navy'
+                          }
+                        `}
+                      >
+                        {heading.text}
+                      </button>
+                    ))}
+                  </nav>
+                </CardContent>
+              )}
+            </Card>
+          </div>
+        )}
+
       {/* Article Content */}
-        <div className="prose prose-lg max-w-none">
+        <div className="prose prose-lg max-w-none" ref={contentRef}>
           <div className="aspect-video bg-gradient-to-br from-brand/20 to-brand-navy/20 rounded-2xl mb-12 flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="h-16 w-16 text-brand-navy mx-auto mb-4" />
@@ -1228,9 +1556,13 @@ export default function BlogDetailPage() {
             ))}
           </div>
         </div>
+        
+        {/* Article End Marker for TOC visibility detection */}
+        <div ref={articleEndRef} className="h-1"></div>
+      </div>
 
-        {/* Author Bio */}
-        <div className="mt-8 p-6 bg-gray-50 rounded-2xl">
+      {/* Author Bio */}
+      <div className="mt-8 p-6 bg-gray-50 rounded-2xl">
           <div className="flex items-start space-x-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={mockBlogPost.author.avatar} alt={mockBlogPost.author.name} />
