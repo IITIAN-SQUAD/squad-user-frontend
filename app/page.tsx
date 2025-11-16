@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import MainLayout from '../components/layout/MainLayout';
 import { BookOpen, Users, Trophy, Clock, ArrowRight, Play, FileText, BarChart2, Swords, RotateCcw, Brain, MessageSquare, Target, Award, Zap, CheckCircle } from 'lucide-react';
+import { isFeatureEnabled } from '@/lib/features';
 
 export default function Home() {
   return (
@@ -139,9 +140,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">Smart Practice</h3>
               <p className="text-gray-600 mb-4">15,000+ curated questions with detailed solutions from IIT experts. Practice by topic, difficulty, or exam pattern.</p>
-              <Link href="/dashboard" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                Start Practicing →
-              </Link>
+              {isFeatureEnabled('practice') ? (
+                <Link href="/dashboard" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  Start Practicing →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
 
             {/* Analytics */}
@@ -151,9 +159,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">Performance Analytics</h3>
               <p className="text-gray-600 mb-4">Track your progress with detailed analytics, identify weak areas, and get personalized recommendations.</p>
-              <Link href="/dashboard/analytics" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                View Analytics →
-              </Link>
+              {isFeatureEnabled('analytics') ? (
+                <Link href="/dashboard/analytics" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  View Analytics →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
 
             {/* Challenges */}
@@ -163,9 +178,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">Live Challenges</h3>
               <p className="text-gray-600 mb-4">Compete with peers in timed challenges, mock tests, and leaderboard competitions.</p>
-              <Link href="/dashboard/challenge" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                Join Challenge →
-              </Link>
+              {isFeatureEnabled('challenge') ? (
+                <Link href="/dashboard/challenge" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  Join Challenge →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
 
             {/* PYQ Papers */}
@@ -175,9 +197,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">PYQ Papers</h3>
               <p className="text-gray-600 mb-4">Complete previous year question papers with exam-like interface and detailed analysis.</p>
-              <Link href="/dashboard/pyq" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                Attempt Papers →
-              </Link>
+              {isFeatureEnabled('pyq') ? (
+                <Link href="/dashboard/pyq" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  Attempt Papers →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
 
             {/* AI Coaching */}
@@ -187,9 +216,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">AI Coaching</h3>
               <p className="text-gray-600 mb-4">Get personalized study plans, doubt resolution, and strategic guidance powered by AI.</p>
-              <Link href="/dashboard/coaching" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                Get Coaching →
-              </Link>
+              {isFeatureEnabled('coaching') ? (
+                <Link href="/dashboard/coaching" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  Get Coaching →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
 
             {/* Doubt Resolution */}
@@ -199,9 +235,16 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-brand-navy mb-4">Instant Doubts</h3>
               <p className="text-gray-600 mb-4">Get your doubts resolved instantly by IIT experts and connect with study groups.</p>
-              <Link href="/dashboard/doubts" className="text-brand-navy font-semibold hover:text-brand transition-colors">
-                Ask Doubts →
-              </Link>
+              {isFeatureEnabled('doubts') ? (
+                <Link href="/dashboard/doubts" className="text-brand-navy font-semibold hover:text-brand transition-colors">
+                  Ask Doubts →
+                </Link>
+              ) : (
+                <span className="text-gray-500 font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Coming Soon - Development in Progress
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -862,13 +905,20 @@ export default function Home() {
           </div>
           
           <div className="text-center">
-            <Link 
-              href="/blogs" 
-              className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            >
-              View All Articles
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+            {isFeatureEnabled('blog') ? (
+              <Link 
+                href="/blog" 
+                className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                View All Articles
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-2 text-gray-500 px-8 py-4">
+                <Clock className="h-5 w-5" />
+                Blog Coming Soon
+              </span>
+            )}
           </div>
         </div>
       </section>

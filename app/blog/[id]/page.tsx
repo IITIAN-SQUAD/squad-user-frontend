@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '../../../components/layout/MainLayout';
@@ -29,7 +29,19 @@ import {
   ChevronDown,
   ChevronUp,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Flag,
+  AlertTriangle,
+  Brain,
+  CheckCircle2,
+  XCircle,
+  Award,
+  Sparkles,
+  Loader2,
+  X as CloseIcon,
+  List,
+  RotateCcw,
+  Square
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +50,9 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface BlogPost {
   id: string;
@@ -77,6 +92,12 @@ interface Comment {
   timestamp: string;
   likes: number;
   replies?: Comment[];
+}
+
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
 }
 
 const mockBlogPost: BlogPost = {
@@ -278,6 +299,126 @@ const mockComments: Comment[] = [
     content: 'Can you write a detailed article on Physics problem-solving techniques? Your approach seems very systematic.',
     timestamp: '2024-01-16T16:45:00Z',
     likes: 15
+  },
+  {
+    id: '4',
+    author: {
+      name: 'Priya Sharma',
+      avatar: '/avatars/priya.jpg'
+    },
+    content: 'The subject-wise strategy is really helpful. I was focusing too much on my strong subjects. This balanced approach makes more sense.',
+    timestamp: '2024-01-17T09:30:00Z',
+    likes: 7
+  },
+  {
+    id: '5',
+    author: {
+      name: 'Amit Kumar',
+      avatar: '/avatars/amit.jpg'
+    },
+    content: 'Great article! The section on dealing with exam pressure is what I needed. Mental preparation is as important as academic preparation.',
+    timestamp: '2024-01-17T11:00:00Z',
+    likes: 10
+  },
+  {
+    id: '6',
+    author: {
+      name: 'Neha Reddy',
+      avatar: '/avatars/neha.jpg'
+    },
+    content: 'This is my third time reading this article. Each time I find something new to implement. Thank you for sharing your experience!',
+    timestamp: '2024-01-17T14:20:00Z',
+    likes: 18
+  },
+  {
+    id: '7',
+    author: {
+      name: 'Vikram Joshi',
+      avatar: '/avatars/vikram.jpg'
+    },
+    content: 'The revision strategy in the last month is spot on. I followed similar approach and it worked wonders for me.',
+    timestamp: '2024-01-17T16:45:00Z',
+    likes: 9
+  },
+  {
+    id: '8',
+    author: {
+      name: 'Anjali Verma',
+      avatar: '/avatars/anjali.jpg'
+    },
+    content: 'Could you please elaborate more on the negative marking strategy? How do we decide when to attempt and when to skip?',
+    timestamp: '2024-01-18T08:15:00Z',
+    likes: 14
+  },
+  {
+    id: '9',
+    author: {
+      name: 'Rohan Mehta',
+      avatar: '/avatars/rohan.jpg'
+    },
+    content: 'Excellent breakdown of the preparation timeline. The 2-year plan is very detailed and practical.',
+    timestamp: '2024-01-18T10:30:00Z',
+    likes: 6
+  },
+  {
+    id: '10',
+    author: {
+      name: 'Divya Nair',
+      avatar: '/avatars/divya.jpg'
+    },
+    content: 'This article should be pinned! Every JEE aspirant should read this. Sharing with my study group.',
+    timestamp: '2024-01-18T13:00:00Z',
+    likes: 22
+  },
+  {
+    id: '11',
+    author: {
+      name: 'Siddharth Rao',
+      avatar: '/avatars/siddharth.jpg'
+    },
+    content: 'The importance of NCERT is often underestimated. Thanks for highlighting it. Going back to basics now!',
+    timestamp: '2024-01-18T15:45:00Z',
+    likes: 11
+  },
+  {
+    id: '12',
+    author: {
+      name: 'Kavya Iyer',
+      avatar: '/avatars/kavya.jpg'
+    },
+    content: 'Love the practical examples and real experiences shared. Makes the strategy more relatable and achievable.',
+    timestamp: '2024-01-19T09:00:00Z',
+    likes: 8
+  },
+  {
+    id: '13',
+    author: {
+      name: 'Aditya Desai',
+      avatar: '/avatars/aditya.jpg'
+    },
+    content: 'The chapter-wise weightage analysis is very useful. Will prioritize my preparation accordingly. Thank you!',
+    timestamp: '2024-01-19T11:30:00Z',
+    likes: 13
+  },
+  {
+    id: '14',
+    author: {
+      name: 'Riya Kapoor',
+      avatar: '/avatars/riya.jpg'
+    },
+    content: 'Finally, an article that talks about work-life balance during preparation. Mental health matters!',
+    timestamp: '2024-01-19T14:15:00Z',
+    likes: 16
+  },
+  {
+    id: '15',
+    author: {
+      name: 'Harsh Agarwal',
+      avatar: '/avatars/harsh.jpg'
+    },
+    content: 'The problem-solving approach section is brilliant. Will start implementing from today. Fingers crossed!',
+    timestamp: '2024-01-19T16:00:00Z',
+    likes: 9
   }
 ];
 
@@ -312,13 +453,177 @@ export default function BlogDetailPage() {
   const [likes, setLikes] = useState(mockBlogPost.likes);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasAudioStarted, setHasAudioStarted] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState(mockComments);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false); // Collapsed by default
   const [commentSort, setCommentSort] = useState<'recent' | 'likes'>('recent');
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportType, setReportType] = useState('');
+  const [reportReason, setReportReason] = useState('');
+  const [reportTarget, setReportTarget] = useState<'post' | 'comment'>('post');
+  const [reportCommentId, setReportCommentId] = useState<string | null>(null);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<{[key: number]: string}>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
+  const [showTOC, setShowTOC] = useState(true);
+  const [isTOCVisible, setIsTOCVisible] = useState(true);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tocRef = useRef<HTMLDivElement>(null);
+  const isClickScrolling = useRef(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const articleEndRef = useRef<HTMLDivElement>(null);
+  
+  const COMMENTS_PER_PAGE = 10;
+
+  // Extract headings for Table of Contents
+  const extractHeadings = (content: string) => {
+    const lines = content.trim().split('\n');
+    const headings: { id: string; text: string; level: number }[] = [];
+    
+    lines.forEach((line, index) => {
+      if (line.startsWith('# ')) {
+        const text = line.substring(2).trim();
+        headings.push({ id: `heading-${index}`, text, level: 1 });
+      } else if (line.startsWith('## ')) {
+        const text = line.substring(3).trim();
+        headings.push({ id: `heading-${index}`, text, level: 2 });
+      } else if (line.startsWith('### ')) {
+        const text = line.substring(4).trim();
+        headings.push({ id: `heading-${index}`, text, level: 3 });
+      }
+    });
+    
+    return headings;
+  };
+
+  const tableOfContents = extractHeadings(mockBlogPost.content);
+
+  // Scroll to section
+  const scrollToSection = (id: string) => {
+    // Set flag to prevent scroll handler from interfering
+    isClickScrolling.current = true;
+    
+    // Immediately update active section
+    setActiveSection(id);
+    
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 120; // Offset for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      
+      // Auto-scroll TOC to show active item
+      setTimeout(() => {
+        if (tocRef.current) {
+          const activeButton = tocRef.current.querySelector(`button[data-heading-id="${id}"]`);
+          if (activeButton) {
+            activeButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 100);
+      
+      // Reset flag after scroll completes
+      setTimeout(() => {
+        isClickScrolling.current = false;
+      }, 1000);
+    }
+  };
+
+  // Track active section on scroll and auto-scroll TOC
+  useEffect(() => {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      // Skip if user just clicked on TOC
+      if (isClickScrolling.current) {
+        return;
+      }
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const headingElements = tableOfContents.map(h => ({
+            id: h.id,
+            element: document.getElementById(h.id)
+          }));
+          
+          // Get viewport top position with offset
+          const scrollPosition = window.scrollY + 200;
+
+          // Find the current active section
+          let currentSection = '';
+          for (let i = 0; i < headingElements.length; i++) {
+            const { id, element } = headingElements[i];
+            if (element) {
+              const elementTop = element.offsetTop;
+              
+              // Check if this heading is in view
+              if (elementTop <= scrollPosition) {
+                currentSection = id;
+              } else {
+                break;
+              }
+            }
+          }
+
+          // Update active section if changed
+          if (currentSection && currentSection !== activeSection) {
+            setActiveSection(currentSection);
+            
+            // Auto-scroll TOC to show active item
+            if (tocRef.current) {
+              const activeButton = tocRef.current.querySelector(`button[data-heading-id="${currentSection}"]`);
+              if (activeButton) {
+                activeButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          }
+          
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection, tableOfContents]);
+
+  // Hide TOC when scrolling past article content
+  useEffect(() => {
+    const handleTOCVisibility = () => {
+      if (articleEndRef.current) {
+        const articleEnd = articleEndRef.current.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        // Hide TOC when article end is above viewport (user scrolled past it)
+        if (articleEnd < windowHeight * 0.3) {
+          setIsTOCVisible(false);
+        } else {
+          setIsTOCVisible(true);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleTOCVisibility, { passive: true });
+    handleTOCVisibility(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleTOCVisibility);
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -361,27 +666,117 @@ export default function BlogDetailPage() {
     if (isPlaying) {
       // Pause text-to-speech
       window.speechSynthesis.pause();
+      setIsPlaying(false);
     } else {
-      // Start text-to-speech
-      const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = isMuted ? 0 : 1;
-      
-      utterance.onend = () => setIsPlaying(false);
-      utterance.onerror = () => setIsPlaying(false);
-      
-      window.speechSynthesis.speak(utterance);
+      // Check if already paused, resume it
+      if (window.speechSynthesis.paused && hasAudioStarted) {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      } else {
+        // Start new text-to-speech
+        // Clear any existing speech first (before setting states)
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+        }
+        
+        const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = isMuted ? 0 : 1;
+        
+        utterance.onstart = () => {
+          // Set states when audio actually starts
+          setHasAudioStarted(true);
+          setIsPlaying(true);
+        };
+        
+        utterance.onend = () => {
+          setIsPlaying(false);
+          setHasAudioStarted(false);
+          utteranceRef.current = null;
+        };
+        
+        utterance.onerror = (error) => {
+          // Ignore errors from cancel() - they're expected
+          if (error.error !== 'canceled' && error.error !== 'interrupted') {
+            console.error('Audio error:', error);
+          }
+        };
+        
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+      }
     }
-    setIsPlaying(!isPlaying);
   };
 
-  const handleMute = () => {
-    setIsMuted(!isMuted);
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
+  const handleRestart = () => {
+    // Stop current playback
+    window.speechSynthesis.cancel();
+    
+    // Start from beginning
+    const utterance = new SpeechSynthesisUtterance(mockBlogPost.content);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = isMuted ? 0 : 1;
+    
+    utterance.onstart = () => {
+      setHasAudioStarted(true);
+      setIsPlaying(true);
+    };
+    
+    utterance.onend = () => {
       setIsPlaying(false);
-    }
+      setHasAudioStarted(false);
+      utteranceRef.current = null;
+    };
+    
+    utterance.onerror = (error) => {
+      if (error.error !== 'canceled' && error.error !== 'interrupted') {
+        console.error('Audio error:', error);
+      }
+    };
+    
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleStop = () => {
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    setHasAudioStarted(false);
+    utteranceRef.current = null;
+  };
+
+  const handleReportPost = () => {
+    setReportTarget('post');
+    setReportCommentId(null);
+    setShowReportDialog(true);
+  };
+
+  const handleReportComment = (commentId: string) => {
+    setReportTarget('comment');
+    setReportCommentId(commentId);
+    setShowReportDialog(true);
+  };
+
+  const handleSubmitReport = () => {
+    // Handle report submission
+    console.log('Report submitted:', {
+      target: reportTarget,
+      commentId: reportCommentId,
+      type: reportType,
+      reason: reportReason
+    });
+    
+    // Reset and close
+    setShowReportDialog(false);
+    setReportType('');
+    setReportReason('');
+    setReportTarget('post');
+    setReportCommentId(null);
+    
+    // Show success message (you can add a toast notification here)
+    alert('Report submitted successfully. We will review it shortly.');
   };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -462,6 +857,225 @@ export default function BlogDetailPage() {
     }
   };
 
+  const getPaginatedComments = () => {
+    const sorted = getSortedComments();
+    const startIndex = (commentsPage - 1) * COMMENTS_PER_PAGE;
+    const endIndex = startIndex + COMMENTS_PER_PAGE;
+    return sorted.slice(startIndex, endIndex);
+  };
+
+  const totalCommentPages = Math.ceil(comments.length / COMMENTS_PER_PAGE);
+
+  // Quiz data based on article content
+  const articleQuiz: QuizQuestion[] = [
+    {
+      question: "What is the most important factor in cracking JEE Advanced according to the article?",
+      options: [
+        "Rote learning",
+        "Analytical thinking and conceptual understanding",
+        "Solving maximum number of problems",
+        "Studying 18 hours daily"
+      ],
+      correctAnswer: 1
+    },
+    {
+      question: "How many hours are allocated for each JEE Advanced paper?",
+      options: ["2 hours", "2.5 hours", "3 hours", "4 hours"],
+      correctAnswer: 2
+    },
+    {
+      question: "What is mentioned as a key characteristic of JEE Advanced?",
+      options: [
+        "Fixed pattern every year",
+        "No negative marking",
+        "Unpredictable pattern",
+        "Easy questions"
+      ],
+      correctAnswer: 2
+    },
+    {
+      question: "According to the article, what should be the focus while preparing?",
+      options: [
+        "Memorizing formulas",
+        "Deep understanding of fundamental concepts",
+        "Speed solving",
+        "Guessing techniques"
+      ],
+      correctAnswer: 1
+    }
+  ];
+
+  // Initialize quiz with default questions
+  const initializeQuiz = () => {
+    setQuizQuestions(articleQuiz);
+    setShowQuiz(true);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+  };
+
+  // Generate more questions using LLM (simulated)
+  const generateMoreQuestions = async () => {
+    setIsGeneratingQuestions(true);
+    
+    // If quiz was submitted, reset to continue with new questions
+    if (quizSubmitted) {
+      setQuizSubmitted(false);
+    }
+    
+    // Simulate API call to LLM
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Get the current question count to generate unique questions
+    const currentCount = quizQuestions.length;
+    
+    // Mock generated questions (in real implementation, these would be from LLM)
+    const questionBank: QuizQuestion[] = [
+      {
+        question: "What is the recommended approach for solving numerical problems in JEE Advanced?",
+        options: [
+          "Skip all numerical questions",
+          "Guess the answer quickly",
+          "Practice dimensional analysis and approximation techniques",
+          "Only attempt if 100% sure"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "How should you prioritize chapters during revision?",
+        options: [
+          "Focus only on easy chapters",
+          "Based on weightage and personal weakness",
+          "Study in alphabetical order",
+          "Skip difficult chapters"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the ideal time to start JEE Advanced preparation?",
+        options: [
+          "One month before exam",
+          "After JEE Main results",
+          "Class 11 onwards with consistent effort",
+          "Only in Class 12"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "Which resource is emphasized as most important for conceptual clarity?",
+        options: [
+          "Coaching material only",
+          "NCERT textbooks",
+          "YouTube videos",
+          "Previous year papers only"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the recommended strategy for attempting the exam?",
+        options: [
+          "Attempt all questions quickly",
+          "Start with difficult questions",
+          "Solve easy questions first, then moderate, then difficult",
+          "Random order"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "How important is solving previous year papers?",
+        options: [
+          "Not important at all",
+          "Only solve in the last week",
+          "Extremely important for understanding exam pattern",
+          "Optional if you know concepts"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "What should be the approach for weak topics?",
+        options: [
+          "Skip them completely",
+          "Focus extra time and practice more problems",
+          "Only read theory once",
+          "Memorize formulas only"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "How to handle exam day stress?",
+        options: [
+          "Panic and rush through questions",
+          "Skip breakfast and arrive early",
+          "Stay calm, follow your strategy, and manage time",
+          "Attempt all questions randomly"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "What is the role of coaching in JEE preparation?",
+        options: [
+          "Completely unnecessary",
+          "Guidance and structured approach, but self-study is crucial",
+          "Only coaching is enough",
+          "Only for weak students"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "How to maintain consistency in preparation?",
+        options: [
+          "Study only when motivated",
+          "Set daily targets and follow a routine",
+          "Study 24 hours before exam",
+          "No need for consistency"
+        ],
+        correctAnswer: 1
+      }
+    ];
+    
+    // Select next 5 questions from the bank (cycling through)
+    const startIndex = (currentCount - 4) % questionBank.length;
+    const newQuestions: QuizQuestion[] = [];
+    for (let i = 0; i < 5; i++) {
+      const index = (startIndex + i) % questionBank.length;
+      newQuestions.push(questionBank[index]);
+    }
+    
+    setQuizQuestions(prev => [...prev, ...newQuestions]);
+    setIsGeneratingQuestions(false);
+  };
+
+  const handleQuizAnswer = (questionIndex: number, optionIndex: number) => {
+    setQuizAnswers(prev => ({
+      ...prev,
+      [questionIndex]: optionIndex.toString()
+    }));
+  };
+
+  const handleQuizSubmit = () => {
+    setQuizSubmitted(true);
+  };
+
+  const handleCancelQuiz = () => {
+    setShowQuiz(false);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setQuizQuestions([]);
+  };
+
+  const getQuizScore = () => {
+    let correct = 0;
+    quizQuestions.forEach((q, index) => {
+      if (quizAnswers[index] === q.correctAnswer.toString()) {
+        correct++;
+      }
+    });
+    return correct;
+  };
+
+  const getAnsweredCount = () => {
+    return Object.keys(quizAnswers).length;
+  };
+
   // Convert markdown-like content to JSX
   const renderContent = (content: string) => {
     const lines = content.trim().split('\n');
@@ -471,19 +1085,19 @@ export default function BlogDetailPage() {
     lines.forEach((line, index) => {
       if (line.startsWith('# ')) {
         elements.push(
-          <h1 key={index} className="text-3xl font-bold text-brand-navy mb-6 mt-8">
+          <h1 key={index} id={`heading-${index}`} className="text-3xl font-bold text-brand-navy mb-6 mt-8 scroll-mt-24">
             {line.substring(2)}
           </h1>
         );
       } else if (line.startsWith('## ')) {
         elements.push(
-          <h2 key={index} className="text-2xl font-bold text-brand-navy mb-4 mt-8">
+          <h2 key={index} id={`heading-${index}`} className="text-2xl font-bold text-brand-navy mb-4 mt-8 scroll-mt-24">
             {line.substring(3)}
           </h2>
         );
       } else if (line.startsWith('### ')) {
         elements.push(
-          <h3 key={index} className="text-xl font-semibold text-brand-navy mb-3 mt-6">
+          <h3 key={index} id={`heading-${index}`} className="text-xl font-semibold text-brand-navy mb-3 mt-6 scroll-mt-24">
             {line.substring(4)}
           </h3>
         );
@@ -627,17 +1241,6 @@ export default function BlogDetailPage() {
             </div>
             
             <div className="flex items-center space-x-2">
-              {isPlaying && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMute}
-                  className={`${isMuted ? 'text-red-500' : 'text-gray-600'}`}
-                >
-                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                </Button>
-              )}
-              
               <Button
                 variant="ghost"
                 size="sm"
@@ -654,6 +1257,15 @@ export default function BlogDetailPage() {
                 className="text-gray-600"
               >
                 <Share2 className="h-5 w-5" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReportPost}
+                className="text-gray-600 hover:text-red-600"
+              >
+                <Flag className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -682,21 +1294,46 @@ export default function BlogDetailPage() {
       )}
 
       {/* Audio Player Info */}
-      {isPlaying && (
+      {hasAudioStarted && (
         <Card className="mb-8 border-brand/20 bg-brand/5">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">
               <Headphones className="h-5 w-5 text-brand" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-brand-navy">Audio Playback Active</p>
-                <p className="text-xs text-gray-600">Article is being read aloud. Use controls to pause or adjust volume.</p>
+                <p className="text-sm font-medium text-brand-navy">
+                  {isPlaying ? 'Audio Playback Active' : 'Audio Paused'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {isPlaying 
+                    ? 'Article is being read aloud.' 
+                    : 'Paused - Click play to resume from where you left off.'}
+                </p>
               </div>
               <div className="flex items-center space-x-2">
-                <Button size="sm" variant="outline" onClick={handlePlayPause}>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handlePlayPause}
+                  title={isPlaying ? 'Pause' : 'Resume'}
+                >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleMute}>
-                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleRestart}
+                  title="Restart from beginning"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleStop} 
+                  title="Stop"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Square className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -704,19 +1341,206 @@ export default function BlogDetailPage() {
         </Card>
       )}
 
+      {/* Main Content with TOC */}
+      <div className="relative">
+        {/* Table of Contents - Desktop Sidebar */}
+        {tableOfContents.length > 0 && isTOCVisible && (
+          <div className="hidden xl:block">
+            <div className="fixed top-32 right-8 w-64 max-h-[calc(100vh-200px)] overflow-y-auto transition-opacity duration-300" ref={tocRef}>
+              <Card className="border-brand/20">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold text-brand-navy flex items-center">
+                      <List className="h-4 w-4 mr-2" />
+                      Table of Contents
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTOC(!showTOC)}
+                      className="h-6 w-6 p-0"
+                    >
+                      {showTOC ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </CardHeader>
+                {showTOC && (
+                  <CardContent className="pt-0">
+                    <nav className="space-y-1">
+                      {tableOfContents.map((heading) => (
+                        <button
+                          key={heading.id}
+                          data-heading-id={heading.id}
+                          onClick={() => scrollToSection(heading.id)}
+                          className={`
+                            w-full text-left text-sm py-1.5 px-2 rounded transition-colors
+                            ${heading.level === 1 ? 'font-semibold' : ''}
+                            ${heading.level === 2 ? 'pl-4 font-medium' : ''}
+                            ${heading.level === 3 ? 'pl-6 text-xs' : ''}
+                            ${activeSection === heading.id 
+                              ? 'bg-brand text-brand-navy font-semibold' 
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-brand-navy'
+                            }
+                          `}
+                        >
+                          {heading.text}
+                        </button>
+                      ))}
+                    </nav>
+                  </CardContent>
+                )}
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile TOC */}
+        {tableOfContents.length > 0 && (
+          <div className="xl:hidden mb-6">
+            <Card className="border-brand/20">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold text-brand-navy flex items-center">
+                    <List className="h-4 w-4 mr-2" />
+                    Table of Contents
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowTOC(!showTOC)}
+                    className="h-6 w-6 p-0"
+                  >
+                    {showTOC ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+              {showTOC && (
+                <CardContent className="pt-0">
+                  <nav className="space-y-1">
+                    {tableOfContents.map((heading) => (
+                      <button
+                        key={heading.id}
+                        data-heading-id={heading.id}
+                        onClick={() => scrollToSection(heading.id)}
+                        className={`
+                          w-full text-left text-sm py-1.5 px-2 rounded transition-colors
+                          ${heading.level === 1 ? 'font-semibold' : ''}
+                          ${heading.level === 2 ? 'pl-4 font-medium' : ''}
+                          ${heading.level === 3 ? 'pl-6 text-xs' : ''}
+                          ${activeSection === heading.id 
+                            ? 'bg-brand text-brand-navy font-semibold' 
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-brand-navy'
+                          }
+                        `}
+                      >
+                        {heading.text}
+                      </button>
+                    ))}
+                  </nav>
+                </CardContent>
+              )}
+            </Card>
+          </div>
+        )}
+
       {/* Article Content */}
-        <div className="prose prose-lg max-w-none">
-          <div className="aspect-video bg-gradient-to-br from-brand/20 to-brand-navy/20 rounded-2xl mb-8 flex items-center justify-center">
+        <div className="prose prose-lg max-w-none" ref={contentRef}>
+          <div className="aspect-video bg-gradient-to-br from-brand/20 to-brand-navy/20 rounded-2xl mb-12 flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="h-16 w-16 text-brand-navy mx-auto mb-4" />
               <p className="text-brand-navy font-semibold">Featured Article Cover</p>
             </div>
           </div>
           
-          <div className="text-lg leading-relaxed">
+          {/* Medium-style article content */}
+          <div className="article-content text-gray-800 leading-[1.8]" style={{
+            fontSize: '20px',
+            fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
+            lineHeight: '32px',
+            letterSpacing: '-0.003em'
+          }}>
             {renderContent(mockBlogPost.content)}
           </div>
         </div>
+        
+        <style jsx global>{`
+          .article-content h1 {
+            font-size: 32px;
+            line-height: 40px;
+            font-weight: 700;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            color: #1a202c;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content h2 {
+            font-size: 28px;
+            line-height: 36px;
+            font-weight: 700;
+            margin-top: 40px;
+            margin-bottom: 12px;
+            color: #1a202c;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content h3 {
+            font-size: 24px;
+            line-height: 32px;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          
+          .article-content p {
+            margin-bottom: 24px;
+            color: #374151;
+          }
+          
+          .article-content ul, .article-content ol {
+            margin-bottom: 24px;
+            padding-left: 28px;
+          }
+          
+          .article-content li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+          }
+          
+          .article-content strong {
+            font-weight: 600;
+            color: #1f2937;
+          }
+          
+          .article-content a {
+            color: #FFBF00;
+            text-decoration: underline;
+            text-decoration-color: rgba(255, 191, 0, 0.4);
+            text-underline-offset: 2px;
+          }
+          
+          .article-content a:hover {
+            text-decoration-color: #FFBF00;
+          }
+          
+          .article-content code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-family: "Monaco", "Courier New", monospace;
+          }
+          
+          .article-content blockquote {
+            border-left: 4px solid #FFBF00;
+            padding-left: 20px;
+            margin: 32px 0;
+            font-style: italic;
+            color: #4b5563;
+          }
+        `}</style>
 
         {/* Tags */}
         <div className="mt-8 pt-6 border-t border-gray-200">
@@ -732,9 +1556,13 @@ export default function BlogDetailPage() {
             ))}
           </div>
         </div>
+        
+        {/* Article End Marker for TOC visibility detection */}
+        <div ref={articleEndRef} className="h-1"></div>
+      </div>
 
-        {/* Author Bio */}
-        <div className="mt-8 p-6 bg-gray-50 rounded-2xl">
+      {/* Author Bio */}
+      <div className="mt-8 p-6 bg-gray-50 rounded-2xl">
           <div className="flex items-start space-x-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={mockBlogPost.author.avatar} alt={mockBlogPost.author.name} />
@@ -822,7 +1650,7 @@ export default function BlogDetailPage() {
           
             {/* Comments List */}
             <div className="space-y-6">
-              {getSortedComments().map((comment) => (
+              {getPaginatedComments().map((comment) => (
               <div key={comment.id} className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex items-start space-x-4">
                   <Avatar className="h-10 w-10">
@@ -842,8 +1670,14 @@ export default function BlogDetailPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem>Report</DropdownMenuItem>
-                          <DropdownMenuItem>Share</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleReportComment(comment.id)}>
+                            <Flag className="h-4 w-4 mr-2" />
+                            Report Comment
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -936,6 +1770,41 @@ export default function BlogDetailPage() {
               ))}
             </div>
             
+            {/* Comments Pagination */}
+            {comments.length > 0 && totalCommentPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCommentsPage(prev => Math.max(prev - 1, 1))}
+                  disabled={commentsPage === 1}
+                >
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalCommentPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={commentsPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCommentsPage(page)}
+                      className={commentsPage === page ? "bg-brand text-brand-navy hover:bg-brand/90" : ""}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCommentsPage(prev => Math.min(prev + 1, totalCommentPages))}
+                  disabled={commentsPage === totalCommentPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            
               {comments.length === 0 && (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
                   <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -947,6 +1816,239 @@ export default function BlogDetailPage() {
           )}
         </div>
       </article>
+
+      {/* Knowledge Quiz Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card className="border-2 border-brand/20 bg-gradient-to-br from-brand/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-brand rounded-lg">
+                  <Brain className="h-6 w-6 text-brand-navy" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl text-brand-navy">Test Your Understanding</CardTitle>
+                  <p className="text-gray-600 mt-1">Quick quiz based on this article</p>
+                </div>
+              </div>
+              {!showQuiz && (
+                <Button 
+                  onClick={initializeQuiz}
+                  className="bg-brand text-brand-navy hover:bg-brand/90"
+                >
+                  Start Quiz
+                </Button>
+              )}
+              {showQuiz && !quizSubmitted && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelQuiz}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  <CloseIcon className="h-4 w-4 mr-1" />
+                  Cancel Quiz
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          
+          {showQuiz && (
+            <CardContent className="space-y-6">
+              {!quizSubmitted ? (
+                <>
+                  {/* Quiz Progress */}
+                  <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-brand/20">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Brain className="h-5 w-5 text-brand" />
+                        <span className="font-semibold text-brand-navy">
+                          Questions: {quizQuestions.length}
+                        </span>
+                      </div>
+                      <Separator orientation="vertical" className="h-6" />
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">
+                          Answered: {getAnsweredCount()}/{quizQuestions.length}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={generateMoreQuestions}
+                      disabled={isGeneratingQuestions}
+                      variant="outline"
+                      size="sm"
+                      className="border-brand text-brand-navy hover:bg-brand/10"
+                    >
+                      {isGeneratingQuestions ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate 5 More
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {quizQuestions.map((q, qIndex) => (
+                    <div key={qIndex} className="bg-white p-6 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-brand-navy mb-4">
+                        {qIndex + 1}. {q.question}
+                      </h4>
+                      <div className="space-y-2">
+                        {q.options.map((option: string, oIndex: number) => (
+                          <button
+                            key={oIndex}
+                            onClick={() => handleQuizAnswer(qIndex, oIndex)}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                              quizAnswers[qIndex] === oIndex.toString()
+                                ? 'border-brand bg-brand/10 text-brand-navy font-medium'
+                                : 'border-gray-200 hover:border-brand/50 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                quizAnswers[qIndex] === oIndex.toString()
+                                  ? 'border-brand bg-brand'
+                                  : 'border-gray-300'
+                              }`}>
+                                {quizAnswers[qIndex] === oIndex.toString() && (
+                                  <div className="w-2 h-2 rounded-full bg-brand-navy" />
+                                )}
+                              </div>
+                              <span>{option}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="flex flex-col items-center gap-3 pt-4">
+                    {getAnsweredCount() < quizQuestions.length && (
+                      <p className="text-sm text-gray-600">
+                        Please answer all {quizQuestions.length} questions to submit
+                      </p>
+                    )}
+                    <Button
+                      onClick={handleQuizSubmit}
+                      disabled={getAnsweredCount() < quizQuestions.length}
+                      className="bg-brand text-brand-navy hover:bg-brand/90 px-8"
+                      size="lg"
+                    >
+                      Submit Quiz ({getAnsweredCount()}/{quizQuestions.length})
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand/20 mb-4">
+                    <Award className="h-10 w-10 text-brand" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-brand-navy mb-2">
+                    Quiz Completed!
+                  </h3>
+                  <p className="text-xl text-gray-700 mb-6">
+                    You scored <span className="font-bold text-brand">{getQuizScore()}</span> out of <span className="font-bold">{quizQuestions.length}</span>
+                  </p>
+                  
+                  {/* Show answers */}
+                  <div className="space-y-4 mt-8 text-left">
+                    {quizQuestions.map((q, qIndex) => {
+                      const userAnswer = parseInt(quizAnswers[qIndex] || '-1');
+                      const isCorrect = userAnswer === q.correctAnswer;
+                      
+                      return (
+                        <div key={qIndex} className="bg-white p-6 rounded-lg border-2 border-gray-200">
+                          <div className="flex items-start gap-3 mb-3">
+                            {isCorrect ? (
+                              <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+                            ) : (
+                              <XCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-brand-navy mb-3">
+                                {qIndex + 1}. {q.question}
+                              </h4>
+                              <div className="space-y-2">
+                                {q.options.map((option: string, oIndex: number) => {
+                                  const isUserAnswer = userAnswer === oIndex;
+                                  const isCorrectAnswer = q.correctAnswer === oIndex;
+                                  
+                                  return (
+                                    <div
+                                      key={oIndex}
+                                      className={`p-3 rounded-lg border-2 ${
+                                        isCorrectAnswer
+                                          ? 'border-green-500 bg-green-50'
+                                          : isUserAnswer
+                                          ? 'border-red-500 bg-red-50'
+                                          : 'border-gray-200'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        {isCorrectAnswer && <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                                        {isUserAnswer && !isCorrectAnswer && <XCircle className="h-4 w-4 text-red-600" />}
+                                        <span className={isCorrectAnswer ? 'font-medium text-green-900' : ''}>{option}</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                    <Button
+                      onClick={generateMoreQuestions}
+                      disabled={isGeneratingQuestions}
+                      variant="outline"
+                      className="border-brand text-brand-navy hover:bg-brand/10"
+                    >
+                      {isGeneratingQuestions ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate 5 More Questions
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setQuizSubmitted(false);
+                        setQuizAnswers({});
+                      }}
+                      variant="outline"
+                      className="border-brand text-brand-navy hover:bg-brand/10"
+                    >
+                      Retake Quiz
+                    </Button>
+                    <Button
+                      onClick={() => setShowQuiz(false)}
+                      className="bg-brand text-brand-navy hover:bg-brand/90"
+                    >
+                      Close Quiz
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
+      </section>
 
       {/* Related Articles */}
       <section className="bg-gray-50 py-12">
@@ -993,6 +2095,100 @@ export default function BlogDetailPage() {
           Back to all articles
         </Link>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Report {reportTarget === 'post' ? 'Article' : 'Comment'}
+            </DialogTitle>
+            <DialogDescription>
+              Help us maintain a safe and respectful community. Please select the reason for reporting this {reportTarget}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <Label htmlFor="report-type" className="text-base font-semibold">
+                Report Type *
+              </Label>
+              <RadioGroup value={reportType} onValueChange={setReportType}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="spam" id="spam" />
+                  <Label htmlFor="spam" className="font-normal cursor-pointer">
+                    Spam or misleading content
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inappropriate" id="inappropriate" />
+                  <Label htmlFor="inappropriate" className="font-normal cursor-pointer">
+                    Inappropriate or offensive content
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="harassment" id="harassment" />
+                  <Label htmlFor="harassment" className="font-normal cursor-pointer">
+                    Harassment or bullying
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="misinformation" id="misinformation" />
+                  <Label htmlFor="misinformation" className="font-normal cursor-pointer">
+                    False or misleading information
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="copyright" id="copyright" />
+                  <Label htmlFor="copyright" className="font-normal cursor-pointer">
+                    Copyright violation
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="other" id="other" />
+                  <Label htmlFor="other" className="font-normal cursor-pointer">
+                    Other
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="report-reason" className="text-base font-semibold">
+                Additional Details (Optional)
+              </Label>
+              <Textarea
+                id="report-reason"
+                placeholder="Please provide any additional context that might help us understand the issue..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Your report will be reviewed by our moderation team within 24 hours.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowReportDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitReport}
+              disabled={!reportType}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Flag className="h-4 w-4 mr-2" />
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

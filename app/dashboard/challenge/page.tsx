@@ -26,8 +26,20 @@ import {
   ChevronRight
 } from "lucide-react";
 import Link from "next/link";
+import ComingSoon from "@/components/ui/ComingSoon";
+import { isFeatureEnabled } from "@/lib/features";
 
 export default function ChallengePage() {
+  if (!isFeatureEnabled('challenge')) {
+    return (
+      <ComingSoon 
+        variant="page"
+        title="Live Challenges Coming Soon"
+        message="We're building an exciting challenge platform where you can compete with peers in timed tests, mock exams, and leaderboard competitions. Get ready for an amazing competitive learning experience!"
+      />
+    );
+  }
+
   const [upcomingSort, setUpcomingSort] = useState('startTime');
   const [publicSort, setPublicSort] = useState('participants');
   
