@@ -40,8 +40,8 @@ export default function Home() {
                   {/* Header Bar */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                     <div className="flex items-center space-x-2">
-                      <img src="/logo.svg" alt="Logo" className="h-6 w-6" />
-                      <span className="font-semibold text-brand-navy">IITian Squad</span>
+                      <img src="/isq-logo-white.svg" alt="Logo" className="h-6" />
+                      {/* <span className="font-semibold text-brand-navy">IITian Squad</span> */}
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-3 h-3 bg-red-400 rounded-full"></div>
