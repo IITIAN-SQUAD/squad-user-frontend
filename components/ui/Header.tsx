@@ -82,7 +82,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <img src="/logo.svg" alt="IITian Squad Logo" className="h-16" />
+              <img src="/logo.svg" alt="IITian Squad Logo" className="h-9" />
             </Link>
           </div>
 

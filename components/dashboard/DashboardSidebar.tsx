@@ -155,9 +155,10 @@ export default function DashboardSidebar() {
       {/* Logo Section */}
       <div className="p-6 flex-shrink-0">
         <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-          <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
+          {/* <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
             IS
-          </div>
+          </div> */}
+          <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" />
         </Link>
       </div>
       
