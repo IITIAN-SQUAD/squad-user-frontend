@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
       root: path.resolve(__dirname),
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/backend/:path*',
+        destination: 'https://api.iitiansquad.com/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

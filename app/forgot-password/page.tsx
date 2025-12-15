@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { requestOtp } from '@/lib/authApi';
 
 type ForgotPasswordStep = 'email-entry' | 'otp-verification' | 'new-password';
 
@@ -16,6 +17,8 @@ export default function ForgotPasswordPage() {
   const [currentStep, setCurrentStep] = useState<ForgotPasswordStep>('email-entry');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     otp: '',
@@ -30,10 +33,26 @@ export default function ForgotPasswordPage() {
     });
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Email submitted for password reset:', formData.email);
-    setCurrentStep('otp-verification');
+    setOtpError(null);
+
+    const email = formData.email.trim();
+    if (!email) {
+      setOtpError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setIsRequestingOtp(true);
+      await requestOtp(email);
+      setCurrentStep('otp-verification');
+    } catch (error: any) {
+      const message = error?.message || 'Failed to send reset code. Please try again.';
+      setOtpError(message);
+    } finally {
+      setIsRequestingOtp(false);
+    }
   };
 
   const handleOtpSubmit = (e: React.FormEvent) => {
@@ -90,10 +109,17 @@ export default function ForgotPasswordPage() {
               onChange={handleInputChange}
               required
             />
+            {otpError && (
+              <p className="text-sm text-red-600 mt-1">{otpError}</p>
+            )}
           </div>
           
-          <Button type="submit" className="w-full bg-brand text-gray-900 hover:bg-brand/90">
-            Send Reset Code
+          <Button
+            type="submit"
+            className="w-full bg-brand text-gray-900 hover:bg-brand/90"
+            disabled={isRequestingOtp}
+          >
+            {isRequestingOtp ? 'Sending...' : 'Send Reset Code'}
           </Button>
         </form>
       </CardContent>
@@ -143,7 +169,18 @@ export default function ForgotPasswordPage() {
             <button 
               type="button" 
               className="text-brand hover:underline font-medium"
-              onClick={() => console.log('Resend OTP')}
+              onClick={async () => {
+                try {
+                  setIsRequestingOtp(true);
+                  setOtpError(null);
+                  await requestOtp(formData.email);
+                } catch (error: any) {
+                  const message = error?.message || 'Failed to resend reset code.';
+                  setOtpError(message);
+                } finally {
+                  setIsRequestingOtp(false);
+                }
+              }}
             >
               Resend
             </button>

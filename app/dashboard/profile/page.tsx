@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import ProfileUpdate from "@/components/profile/ProfileUpdate";
+import { getUserProfile } from "@/lib/authApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +19,51 @@ import { AlertTriangle, CheckCircle, Clock, Eye, Flag, Shield, ExternalLink, Mai
 import Link from "next/link";
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const [name, setName] = useState("User");
   const [email, setEmail] = useState("user@example.com");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [newEmail, setNewEmail] = useState("");
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  useEffect(() => {
+    // Fetch user data from backend
+    const fetchUserData = async () => {
+      try {
+        console.log('🔄 ProfilePage: Fetching user profile...');
+        const profile = await getUserProfile();
+        console.log('✅ ProfilePage: Profile fetched:', profile);
+        
+        if (profile && profile.name && profile.email) {
+          setName(profile.name);
+          setEmail(profile.email);
+          setProfileImage(profile.image_url || null);
+          console.log('✅ Profile page data set:', { name: profile.name, email: profile.email, image: profile.image_url });
+        } else {
+          console.error('❌ Invalid profile data:', profile);
+        }
+      } catch (error) {
+        console.error('❌ ProfilePage: Failed to fetch user profile:', error);
+        // If not authenticated, redirect to login
+        router.push('/login');
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const handleEmailUpdate = () => {
     if (newEmail && newEmail !== email) {
@@ -79,100 +120,7 @@ export default function ProfilePage() {
           </TabsList>
           
           <TabsContent value="personal">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>
-                  Update your personal details and profile picture
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-8">
-                  <div className="md:w-1/3">
-                    <div className="flex flex-col items-center">
-                      <Avatar className="w-32 h-32 mb-4">
-                        <AvatarImage src="/avatar.png" alt="User" />
-                        <AvatarFallback className="text-2xl">US</AvatarFallback>
-                      </Avatar>
-                      <Button variant="outline" size="sm" className="mb-2">
-                        Change Photo
-                      </Button>
-                      <p className="text-sm text-muted-foreground">
-                        JPG, GIF or PNG. Max size 2MB
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="md:w-2/3">
-                    <form className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium">First Name</div>
-                          <Input
-                            type="text"
-                            id="firstName"
-                            defaultValue="User"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium">Last Name</div>
-                          <Input
-                            type="text"
-                            id="lastName"
-                            defaultValue="Name"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium">Email</div>
-                        <div className="space-y-2">
-                          <Input
-                            type="email"
-                            id="email"
-                            value={email}
-                            disabled
-                            className="bg-muted"
-                          />
-                          <div className="text-xs text-muted-foreground">
-                            Current email address (verified)
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium">New Email Address</div>
-                        <div className="flex gap-2">
-                          <Input
-                            type="email"
-                            placeholder="Enter new email address"
-                            value={newEmail}
-                            onChange={(e) => setNewEmail(e.target.value)}
-                          />
-                          <Button 
-                            onClick={handleEmailUpdate}
-                            disabled={!newEmail || newEmail === email}
-                            variant="outline"
-                          >
-                            <Mail className="h-4 w-4 mr-2" />
-                            Update
-                          </Button>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          You'll receive an OTP for verification
-                        </div>
-                      </div>
-                      
-                    </form>
-                  </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter className="flex justify-end">
-                <Button>Save Changes</Button>
-              </CardFooter>
-            </Card>
+            <ProfileUpdate onProfileUpdated={() => window.location.reload()} />
           </TabsContent>
 
           <TabsContent value="enrollments">

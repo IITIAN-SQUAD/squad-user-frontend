@@ -1,7 +1,9 @@
 
 "use client"
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getUserProfile, logout as logoutApi } from "@/lib/authApi";
 import { 
   User, 
   BarChart2, 
@@ -10,6 +12,8 @@ import {
   Swords, 
   FileText, 
   LogOut,
+  LogIn,
+  UserPlus,
   ChevronRight,
   RotateCcw,
   Brain,
@@ -24,6 +28,60 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userImage, setUserImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch user data from backend
+    const fetchUserData = async () => {
+      try {
+        console.log('🔄 DashboardSidebar: Fetching user profile...');
+        const profile = await getUserProfile();
+        console.log('✅ DashboardSidebar: Profile fetched:', profile);
+        
+        if (profile && profile.name && profile.email) {
+          setIsAuthenticated(true);
+          setUserName(profile.name);
+          setUserEmail(profile.email);
+          setUserImage(profile.image_url || null);
+          console.log('✅ Profile data set:', { name: profile.name, email: profile.email, image: profile.image_url });
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error: any) {
+        console.log('ℹ️ User not authenticated');
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if API fails, redirect to login
+      router.push('/login');
+    }
+  };
   
   const isActive = (path: string) => {
     return pathname === path;
@@ -93,8 +151,9 @@ export default function DashboardSidebar() {
 
   // Sidebar content component
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white">
-      <div className="p-6">
+    <div className="flex flex-col h-full bg-white min-h-0">
+      {/* Logo Section */}
+      <div className="p-6 flex-shrink-0">
         <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
           <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
             IS
@@ -102,7 +161,8 @@ export default function DashboardSidebar() {
         </Link>
       </div>
       
-      <nav className="flex-1 px-4 py-2">
+      {/* Navigation Section - Takes remaining space */}
+      <nav className="flex-1 px-4 py-2 overflow-y-auto min-h-0">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.name}>
@@ -124,25 +184,57 @@ export default function DashboardSidebar() {
         </ul>
       </nav>
       
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar>
-            <AvatarImage src="/avatar.png" alt="User" />
-            <AvatarFallback>US</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">User Name</p>
-            <p className="text-sm text-sidebar-foreground/70">user@example.com</p>
+      {/* Profile/Login section - Fixed at bottom, above footer */}
+      <div className="p-4 border-t border-sidebar-border flex-shrink-0">
+        {isAuthenticated ? (
+          <>
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={userImage || undefined} alt={userName} />
+                <AvatarFallback className="bg-brand text-gray-900 text-sm">{getInitials(userName)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{userName}</p>
+                <p className="text-xs text-sidebar-foreground/70 truncate">{userEmail}</p>
+              </div>
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </Button>
+          </>
+        ) : (
+          <div className="space-y-2">
+            <Button 
+              variant="default" 
+              className="w-full bg-brand text-gray-900 hover:bg-brand/90"
+              onClick={() => router.push('/login')}
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => router.push('/signup')}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Sign Up
+            </Button>
           </div>
-        </div>
-        
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-sidebar-foreground/80"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign out
-        </Button>
+        )}
+      </div>
+      
+      {/* Sidebar footer area - Fixed at very bottom */}
+      <div className="p-4 border-t border-sidebar-border bg-gray-50 flex-shrink-0">
+        <p className="text-xs text-center text-muted-foreground">
+          © 2024 IITian Squad
+        </p>
       </div>
     </div>
   );

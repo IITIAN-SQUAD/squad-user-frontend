@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,37 +8,110 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { login, getUserProfile, initiateGoogleOAuth } from '@/lib/authApi';
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (profile && profile.id) {
+          // User is already logged in, redirect to dashboard
+          console.log('User already authenticated, redirecting to dashboard');
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        // User is not authenticated, stay on login page
+        console.log('User not authenticated, showing login form');
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear error when user types
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login form submitted:', formData);
-    // Mock successful login - redirect to dashboard
-    window.location.href = '/dashboard';
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await login({
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log('Login successful:', response);
+      
+      // Redirect to dashboard (practice section) after successful login
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked');
-    // Mock Google OAuth - redirect to dashboard
-    window.location.href = '/dashboard';
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      console.log('Initiating Google OAuth...');
+      
+      const response = await initiateGoogleOAuth();
+      
+      if (response.authorization_url) {
+        // Redirect to Google OAuth authorization URL
+        window.location.href = response.authorization_url;
+      } else {
+        throw new Error('No authorization URL received');
+      }
+    } catch (err: any) {
+      console.error('Google OAuth error:', err);
+      setError(err.message || 'Failed to initiate Google login');
+      setLoading(false);
+    }
   };
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-brand" />
+            <p className="mt-4 text-muted-foreground">Checking authentication...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -90,6 +163,12 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -99,6 +178,7 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -118,6 +198,7 @@ export default function LoginPage() {
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={handleInputChange}
+                      disabled={loading}
                       required
                     />
                     <Button
@@ -126,6 +207,7 @@ export default function LoginPage() {
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -136,8 +218,19 @@ export default function LoginPage() {
                   </div>
                 </div>
                 
-                <Button type="submit" className="w-full bg-brand text-gray-900 hover:bg-brand/90">
-                  Sign In
+                <Button 
+                  type="submit" 
+                  className="w-full bg-brand text-gray-900 hover:bg-brand/90"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
               </form>
 

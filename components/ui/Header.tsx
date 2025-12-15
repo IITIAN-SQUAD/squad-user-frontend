@@ -1,8 +1,20 @@
 "use client";
 import Link from 'next/link';
-import { Menu, X, ChevronDown, User, BarChart2, Trophy, BookOpen, Swords, FileText, RotateCcw, Brain, MessageSquare, GraduationCap } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, ChevronDown, User, BarChart2, Trophy, BookOpen, Swords, FileText, RotateCcw, Brain, MessageSquare, GraduationCap, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { isFeatureEnabled } from '@/lib/features';
+import { getUserProfile, logout as logoutApi } from '@/lib/authApi';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
 
 // Icon mapping for features
 const featureIcons = {
@@ -17,8 +29,51 @@ const featureIcons = {
 };
 
 export default function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userImage, setUserImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (profile && profile.id) {
+          setIsAuthenticated(true);
+          setUserName(profile.name);
+          setUserEmail(profile.email);
+          setUserImage(profile.image_url || null);
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+      setIsAuthenticated(false);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      router.push('/login');
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header className="bg-brand-navy shadow-lg">
@@ -75,17 +130,54 @@ export default function Header() {
             )}
           </nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons / User Profile */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link href="/login" className="text-white hover:text-brand font-medium transition-colors">
-              Login
-            </Link>
-            <Link 
-              href="/signup" 
-              className="bg-brand text-black px-6 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors"
-            >
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar>
+                      <AvatarImage src={userImage || undefined} alt={userName} />
+                      <AvatarFallback className="bg-brand text-gray-900">{getInitials(userName)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userEmail}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link href="/login" className="text-white hover:text-brand font-medium transition-colors">
+                  Login
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="bg-brand text-black px-6 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -184,22 +276,65 @@ export default function Header() {
                 </Link>
               )}
               
-              {/* Auth Links */}
+              {/* Auth Links / User Profile */}
               <div className="border-t border-gray-600 pt-3 mt-3">
-                <Link 
-                  href="/login" 
-                  className="block px-3 py-2 text-white hover:text-brand font-medium transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link 
-                  href="/signup" 
-                  className="block mx-3 mt-2 bg-brand text-black px-4 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-3 py-2 mb-2">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={userImage || undefined} alt={userName} />
+                          <AvatarFallback className="bg-brand text-gray-900 text-sm">{getInitials(userName)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-white truncate">{userName}</p>
+                          <p className="text-xs text-gray-300 truncate">{userEmail}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Link 
+                      href="/dashboard" 
+                      className="block px-3 py-2 text-white hover:text-brand font-medium transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/dashboard/profile" 
+                      className="block px-3 py-2 text-white hover:text-brand font-medium transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-white hover:text-brand font-medium transition-colors flex items-center"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href="/login" 
+                      className="block px-3 py-2 text-white hover:text-brand font-medium transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      href="/signup" 
+                      className="block mx-3 mt-2 bg-brand text-black px-4 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors text-center"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

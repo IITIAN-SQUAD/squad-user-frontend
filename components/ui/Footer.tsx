@@ -20,15 +20,19 @@ export default function Footer() {
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-gray-300">
                 <Mail className="h-4 w-4 text-brand" />
-                <span className="text-sm">support@iitiansquad.com</span>
+                <a href="mailto:hr-ops@iitiansquad.com" className="text-sm hover:text-brand transition-colors">
+                  hr-ops@iitiansquad.com
+                </a>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Phone className="h-4 w-4 text-brand" />
-                <span className="text-sm">+91 98765 43210</span>
+                <a href="tel:+919369074016" className="text-sm hover:text-brand transition-colors">
+                  +91 9369074016
+                </a>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <MapPin className="h-4 w-4 text-brand" />
-                <span className="text-sm">New Delhi, India</span>
+                <span className="text-sm">Bengaluru, India</span>
               </div>
             </div>
             

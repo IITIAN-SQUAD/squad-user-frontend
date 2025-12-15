@@ -1,23 +1,30 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { requestOtp, signUp, getUserProfile, initiateGoogleOAuth } from '@/lib/authApi';
 
-type SignUpStep = 'initial' | 'email-entry' | 'otp-verification' | 'user-details';
+type SignUpStep = 'initial' | 'email-entry' | 'user-details';
 
 export default function SignUpPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<SignUpStep>('initial');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [otpSent, setOtpSent] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     otp: '',
@@ -26,6 +33,27 @@ export default function SignUpPage() {
     confirmPassword: ''
   });
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (profile && profile.id) {
+          // User is already logged in, redirect to dashboard
+          console.log('User already authenticated, redirecting to dashboard');
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        // User is not authenticated, stay on signup page
+        console.log('User not authenticated, showing signup form');
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, [router]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -33,9 +61,24 @@ export default function SignUpPage() {
     });
   };
 
-  const handleGoogleSignUp = () => {
-    console.log('Google sign up clicked');
-    router.push('/dashboard');
+  const handleGoogleSignUp = async () => {
+    try {
+      setIsSubmitting(true);
+      console.log('Initiating Google OAuth signup...');
+      
+      const response = await initiateGoogleOAuth();
+      
+      if (response.authorization_url) {
+        // Redirect to Google OAuth authorization URL
+        window.location.href = response.authorization_url;
+      } else {
+        throw new Error('No authorization URL received');
+      }
+    } catch (err: any) {
+      console.error('Google OAuth error:', err);
+      setSignupError(err.message || 'Failed to initiate Google signup');
+      setIsSubmitting(false);
+    }
   };
 
   const handleEmailSignUp = () => {
@@ -53,22 +96,68 @@ export default function SignUpPage() {
     router.push('/');
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Email submitted:', formData.email);
-    setCurrentStep('otp-verification');
+    setOtpError(null);
+
+    const email = formData.email.trim();
+    if (!email) {
+      setOtpError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setIsRequestingOtp(true);
+      await requestOtp(email);
+      setOtpSent(true);
+      setCurrentStep('user-details');
+    } catch (error: any) {
+      const message = error?.message || 'Failed to send verification code. Please try again.';
+      setOtpError(message);
+    } finally {
+      setIsRequestingOtp(false);
+    }
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('OTP submitted:', formData.otp);
-    setCurrentStep('user-details');
-  };
+    setSignupError(null);
 
-  const handleFinalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Final form submitted:', formData);
-    router.push('/dashboard');
+    // Validation
+    if (!formData.name.trim()) {
+      setSignupError('Please enter your name');
+      return;
+    }
+    if (!formData.otp.trim() || formData.otp.length !== 6) {
+      setSignupError('Please enter a valid 6-digit OTP');
+      return;
+    }
+    if (formData.password.length < 4) {
+      setSignupError('Password must be at least 4 characters');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setSignupError('Passwords do not match');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await signUp({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        otp: formData.otp.trim(),
+        password: formData.password,
+      });
+
+      // Redirect to login page - backend will set cookies during login
+      router.push('/login?registered=true');
+    } catch (error: any) {
+      const message = error?.message || 'Failed to create account. Please try again.';
+      setSignupError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderInitialStep = () => (
@@ -162,35 +251,50 @@ export default function SignUpPage() {
               onChange={handleInputChange}
               required
             />
+            {otpError && (
+              <p className="text-sm text-red-600 mt-1">{otpError}</p>
+            )}
           </div>
           
-          <Button type="submit" className="w-full bg-brand text-gray-900 hover:bg-brand/90">
-            Send Verification Code
+          <Button
+            type="submit"
+            className="w-full bg-brand text-gray-900 hover:bg-brand/90"
+            disabled={isRequestingOtp}
+          >
+            {isRequestingOtp ? 'Sending...' : 'Send Verification Code'}
           </Button>
         </form>
       </CardContent>
     </>
   );
 
-  const renderOtpVerification = () => (
+  const renderUserDetails = () => (
     <>
       <CardHeader className="space-y-1">
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => setCurrentStep('email-entry')}
+          onClick={() => {
+            setCurrentStep('email-entry');
+            setOtpSent(false);
+          }}
           className="self-start p-0 h-auto"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back
         </Button>
-        <CardTitle className="text-2xl font-bold text-center">Verify Your Email</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Complete Your Profile</CardTitle>
         <CardDescription className="text-center">
-          Enter the 6-digit code sent to {formData.email}
+          {otpSent && (
+            <span className="text-green-600 block mb-1">
+              ✓ Verification code sent to {formData.email}
+            </span>
+          )}
+          Enter the code and set up your account
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleOtpSubmit} className="space-y-4">
+        <form onSubmit={handleFinalSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="otp">Verification Code</Label>
             <Input
@@ -204,46 +308,31 @@ export default function SignUpPage() {
               className="text-center text-lg tracking-widest"
               required
             />
+            <div className="text-center text-sm">
+              Didn't receive the code?{' '}
+              <button 
+                type="button" 
+                className="text-brand hover:underline font-medium"
+                disabled={isRequestingOtp}
+                onClick={async () => {
+                  try {
+                    setIsRequestingOtp(true);
+                    setSignupError(null);
+                    await requestOtp(formData.email);
+                    setOtpSent(true);
+                  } catch (error: any) {
+                    const message = error?.message || 'Failed to resend verification code.';
+                    setSignupError(message);
+                  } finally {
+                    setIsRequestingOtp(false);
+                  }
+                }}
+              >
+                {isRequestingOtp ? 'Sending...' : 'Resend'}
+              </button>
+            </div>
           </div>
-          
-          <Button type="submit" className="w-full bg-brand text-gray-900 hover:bg-brand/90">
-            Verify Code
-          </Button>
-          
-          <div className="text-center text-sm">
-            Didn't receive the code?{' '}
-            <button 
-              type="button" 
-              className="text-brand hover:underline font-medium"
-              onClick={() => console.log('Resend OTP')}
-            >
-              Resend
-            </button>
-          </div>
-        </form>
-      </CardContent>
-    </>
-  );
 
-  const renderUserDetails = () => (
-    <>
-      <CardHeader className="space-y-1">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setCurrentStep('otp-verification')}
-          className="self-start p-0 h-auto"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
-        <CardTitle className="text-2xl font-bold text-center">Complete Your Profile</CardTitle>
-        <CardDescription className="text-center">
-          Set up your name and password
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleFinalSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input
@@ -264,7 +353,7 @@ export default function SignUpPage() {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
+                placeholder="Create a password (min 4 characters)"
                 value={formData.password}
                 onChange={handleInputChange}
                 required
@@ -295,6 +384,11 @@ export default function SignUpPage() {
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
+                className={
+                  formData.confirmPassword && formData.password !== formData.confirmPassword
+                    ? "border-red-500 focus:ring-red-500"
+                    : ""
+                }
                 required
               />
               <Button
@@ -311,15 +405,49 @@ export default function SignUpPage() {
                 )}
               </Button>
             </div>
+            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <span>✗</span> Passwords do not match
+              </p>
+            )}
+            {formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length >= 4 && (
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <span>✓</span> Passwords match
+              </p>
+            )}
           </div>
+
+          {signupError && (
+            <p className="text-sm text-red-600 text-center">{signupError}</p>
+          )}
           
-          <Button type="submit" className="w-full bg-brand text-gray-900 hover:bg-brand/90">
-            Create Account
+          <Button 
+            type="submit" 
+            className="w-full bg-brand text-gray-900 hover:bg-brand/90"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
       </CardContent>
     </>
   );
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-brand" />
+            <p className="mt-4 text-muted-foreground">Checking authentication...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -330,7 +458,6 @@ export default function SignUpPage() {
           <Card className="w-full">
             {currentStep === 'initial' && renderInitialStep()}
             {currentStep === 'email-entry' && renderEmailEntry()}
-            {currentStep === 'otp-verification' && renderOtpVerification()}
             {currentStep === 'user-details' && renderUserDetails()}
           </Card>
           
