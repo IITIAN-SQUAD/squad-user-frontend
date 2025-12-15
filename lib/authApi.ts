@@ -132,10 +132,8 @@ export interface OAuth2AuthorizeResponse {
  * @returns Promise with authorization URL to redirect user to Google OAuth
  */
 export async function initiateGoogleOAuth(): Promise<OAuth2AuthorizeResponse> {
-  // Backend returns 302 redirect, so we need to construct the URL manually
-  // and let the browser handle the redirect
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const authUrl = `${API_BASE_URL}/v0/oauth2/authorize`;
+  // Use the proxy path that rewrites to backend
+  const authUrl = `/api/backend/v0/oauth2/authorize`;
   
   // Return the URL for the frontend to redirect to
   return { authorization_url: authUrl };

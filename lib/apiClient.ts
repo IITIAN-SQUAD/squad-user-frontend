@@ -1,8 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
-}
+// Use Next.js rewrite proxy path instead of environment variable
+const API_BASE_URL = "/api/backend";
 
 // Helper function to get user-friendly error messages based on status code
 function getStatusMessage(status: number): string {
@@ -136,10 +133,10 @@ export async function apiFetch<T>(
         error: error.message,
       });
       throw new Error(
-        `Cannot connect to backend at ${API_BASE_URL}. Please check:\n` +
-        `1. Backend is running on port 8080\n` +
-        `2. CORS is enabled on backend\n` +
-        `3. NEXT_PUBLIC_API_BASE_URL is correct in .env.local`
+        `Cannot connect to backend. Please check:\n` +
+        `1. Backend server is running\n` +
+        `2. Network connection is stable\n` +
+        `3. API endpoint is accessible`
       );
     }
     throw error;
