@@ -92,7 +92,7 @@ export default function PracticeTab() {
   };
 
   return (
-    <div className="w-full max-w-none">
+    <div>
       <div className="space-y-6 sm:space-y-8">
         <div>
           <h2 className="text-2xl font-bold mb-6">Practice Section</h2>
