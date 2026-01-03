@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, LogIn, UserPlus } from "lucide-react";
+import { Bell, ChevronRight, LogIn, Menu, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getUserProfile, logout as logoutApi } from "@/lib/authApi";
@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { SheetTrigger } from "../ui/sheet";
 
 export default function DashboardHeader() {
   const router = useRouter();
@@ -100,40 +101,47 @@ export default function DashboardHeader() {
     { id: "upsc", name: "UPSC" },
   ];
 
-  const dropDown = 
-            <Select defaultValue="jee">
-              <SelectTrigger className="text-xs h-fit">
-                <SelectValue placeholder="Select exam" className="text-xs" />
-              </SelectTrigger>
-              <SelectContent className="text-xs">
-                {examOptions.map((exam) => (
-                  <SelectItem 
-                    key={exam.id} 
-                    value={exam.id} 
-                    className="text-xs hover:bg-stone-100"
-                  >
-                    {exam.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          
+  const dropDown = (
+    <Select defaultValue="jee">
+      <SelectTrigger className="text-xs h-fit cursor-pointer transition-colors duration-100 hover:bg-stone-50">
+        <SelectValue placeholder="Select exam" className="text-xs" />
+      </SelectTrigger>
+      <SelectContent className="text-xs">
+        {examOptions.map((exam) => (
+          <SelectItem
+            key={exam.id}
+            value={exam.id}
+            className="text-xs hover:bg-stone-50 transition-colors duration-100 cursor-pointer"
+          >
+            {exam.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 
   return (
-    <header className="flex-col items-center justify-between">
-      <div className="py-[7.71px] px-6 w-full flex items-center justify-between border-b border-border">
-        <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" />
+    <>
+      <header className="py-[7.71px] px-6 w-full flex items-center justify-between border-b border-border sticky top-0 z-50 bg-white">
+        <div className="flex gap-[9.95px]">
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" />
+        </div>
 
-        <div className="flex gap-3">
-          
-          <div className="hidden md:block">
-            {dropDown}
-          </div>
-          
+        <div className="flex gap-[9.95px]">
+          <div className="hidden md:block">{dropDown}</div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-[9.95px]">
             {isAuthenticated && (
-              <Button variant="ghost" size="icon" className="relative bg-stone-100">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative bg-stone-100 hover:bg-stone-200 cursor-pointer transition-colors duration-100"
+              >
                 <Bell className="h-5 w-5" />
                 <Badge
                   className="absolute top-0 right-0 h-2 w-2 p-0"
@@ -147,7 +155,7 @@ export default function DashboardHeader() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-8 px-2 rounded-full flex items-center gap-2"
+                    className="relative h-8 p-0 rounded-full flex items-center gap-2 cursor-pointer"
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
@@ -245,12 +253,12 @@ export default function DashboardHeader() {
             )}
           </div>
         </div>
-      </div>
+      </header>
       <div className="md:hidden py-[7.71px] px-6 border-b ">
-        <div className="w-full">
+        <div className="w-full flex items-center justify-between">
           {dropDown}
         </div>
       </div>
-    </header>
+    </>
   );
 }

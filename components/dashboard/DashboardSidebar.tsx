@@ -137,16 +137,12 @@ export default function DashboardSidebar() {
 
   // Mobile sidebar with Sheet component
   const MobileSidebar = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="md:hidden absolute top-16 right-4">
-          <ChevronRight className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
+    <>
+
       <SheetContent side="left" className="w-64 p-0">
         <SidebarContent />
       </SheetContent>
-    </Sheet>
+    </>
   );
 
   // Sidebar content component
