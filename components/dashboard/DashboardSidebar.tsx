@@ -148,19 +148,9 @@ export default function DashboardSidebar() {
   // Sidebar content component
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white min-h-0">
-      {/* Logo Section */}
-      <div className="p-6 flex-shrink-0">
-        <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-          {/* <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
-            IS
-          </div> */}
-          {/* LOGO IMAGE HERE -- COMMENTED */}
-          {/* <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" /> */}
-        </Link>
-      </div>
       
       {/* Navigation Section - Takes remaining space */}
-      <nav className="flex-1 px-4 py-2 overflow-y-auto min-h-0">
+      <nav className="flex-1 px-4 py-[19.2px] overflow-y-auto min-h-0">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.name}>
