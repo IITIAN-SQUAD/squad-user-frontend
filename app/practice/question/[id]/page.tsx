@@ -179,16 +179,6 @@ export default function QuestionPage() {
     }))
   }
 
-  const toggleBookmark = () => {
-    if (!isLoggedIn) {
-      setShowLoginDialog(true)
-      return
-    }
-    setQuestion(prev => ({
-      ...prev,
-      isBookmarked: !prev.isBookmarked
-    }))
-  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
