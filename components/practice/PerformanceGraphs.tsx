@@ -41,9 +41,9 @@ export default function PerformanceGraphs() {
                     <span className="text-sm text-muted-foreground">
                       {subject.covered}/{subject.total}
                     </span>
-                    <Badge variant={subject.percentage >= 80 ? "default" : subject.percentage >= 60 ? "secondary" : "destructive"}>
+                    <span className="text-sm font-semibold text-gray-900">
                       {subject.percentage}%
-                    </Badge>
+                    </span>
                   </div>
                 </div>
                 <Progress value={subject.percentage} className="h-3" />

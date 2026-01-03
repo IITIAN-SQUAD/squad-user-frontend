@@ -119,13 +119,14 @@ export default function QuestionContent({
             </RadioGroup>
           )}
           
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-6">
             {!hasAttempted ? (
               <>
                 <Button 
                   onClick={onAttempt}
                   disabled={!selectedAnswer}
                   size="lg"
+                  className="flex-1 sm:flex-none"
                 >
                   Submit Answer
                 </Button>
@@ -133,20 +134,21 @@ export default function QuestionContent({
                   variant="outline" 
                   onClick={onShowAnswer}
                   size="lg"
+                  className="flex-1 sm:flex-none"
                 >
                   Show Answer
                 </Button>
               </>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 {question.status === "correct" ? (
-                  <Badge className="bg-green-100 text-green-800 px-3 py-1">
+                  <Badge className="bg-green-100 text-green-800 px-3 py-1.5 text-sm">
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Correct Answer!
                   </Badge>
                 ) : (
                   <>
-                    <Badge className="bg-red-100 text-red-800 px-3 py-1">
+                    <Badge className="bg-red-100 text-red-800 px-3 py-1.5 text-sm">
                       <XCircle className="h-4 w-4 mr-2" />
                       Incorrect Answer
                     </Badge>

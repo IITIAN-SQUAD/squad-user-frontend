@@ -460,15 +460,15 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
 
       {/* Solutions List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h3 className="text-base sm:text-lg font-semibold">
             Community Solutions ({solutions.length})
           </h3>
           
           <div className="flex items-center gap-2">
-            <Label htmlFor="sort-by" className="text-sm">Sort by:</Label>
+            <Label htmlFor="sort-by" className="text-xs sm:text-sm">Sort by:</Label>
             <Select value={sortBy} onValueChange={(value: "upvotes" | "date") => setSortBy(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-32 h-9 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -481,34 +481,34 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
         
         {sortedSolutions.map(solution => (
           <Card key={solution.id}>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-10 w-10">
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 flex-shrink-0">
                   <AvatarImage src={solution.author.avatar} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-[10px] sm:text-xs">
                     {solution.author.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="font-medium">{solution.author.name}</span>
-                    <Badge variant="outline">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                    <span className="font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{solution.author.name}</span>
+                    <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                       {solution.author.xp} XP
                     </Badge>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
                       {formatDistanceToNow(solution.createdAt, { addSuffix: true })}
                     </span>
                     {solution.replies.length > 0 && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                         • {solution.replies.length} {solution.replies.length === 1 ? 'reply' : 'replies'}
                       </span>
                     )}
                   </div>
                   
-                  <div className="prose prose-sm max-w-none mb-4">
+                  <div className="prose prose-sm max-w-none mb-3 sm:mb-4">
                     <div 
-                      className="whitespace-pre-wrap text-sm leading-relaxed"
+                      className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed break-words"
                       dangerouslySetInnerHTML={{
                         __html: solution.content
                           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -520,51 +520,52 @@ export default function CommunitySolutionTab({ questionId }: CommunitySolutionTa
                   </div>
                   
                   {solution.imageUrl && (
-                    <div className="mb-4">
+                    <div className="mb-3 sm:mb-4">
                       <img
                         src={solution.imageUrl}
                         alt="Solution diagram"
-                        style={{ width: solution.imageSize ? `${solution.imageSize}px` : '300px', height: 'auto' }}
+                        style={{ width: solution.imageSize ? `${solution.imageSize}px` : '300px', height: 'auto', maxWidth: '100%' }}
                         className="rounded-lg border"
                       />
                     </div>
                   )}
                   
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-0.5">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`${solution.isUpvoted ? 'text-green-600 bg-green-50' : ''}`}
+                        className={`h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs ${solution.isUpvoted ? 'text-green-600 bg-green-50' : ''}`}
                         onClick={() => handleVote(solution.id, 'up')}
                       >
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        {solution.upvotes}
+                        <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
+                        <span className="text-[10px] sm:text-xs">{solution.upvotes}</span>
                       </Button>
                       
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`${solution.isDownvoted ? 'text-red-600 bg-red-50' : ''}`}
+                        className={`h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs ${solution.isDownvoted ? 'text-red-600 bg-red-50' : ''}`}
                         onClick={() => handleVote(solution.id, 'down')}
                       >
-                        <ThumbsDown className="h-4 w-4 mr-1" />
-                        {solution.downvotes}
+                        <ThumbsDown className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
+                        <span className="text-[10px] sm:text-xs">{solution.downvotes}</span>
                       </Button>
                     </div>
                     
                     <Button 
                       variant="ghost" 
                       size="sm"
+                      className="h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs"
                       onClick={() => setReplyingTo(solution.id)}
                     >
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      Reply
+                      <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
+                      <span className="hidden sm:inline">Reply</span>
                     </Button>
                     
-                    <Button variant="ghost" size="sm">
-                      <Flag className="h-4 w-4 mr-1" />
-                      Report
+                    <Button variant="ghost" size="sm" className="h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs">
+                      <Flag className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
+                      <span className="hidden sm:inline">Report</span>
                     </Button>
                   </div>
                   

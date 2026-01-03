@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   Bookmark, 
   BookmarkPlus, 
@@ -43,6 +44,20 @@ interface CustomList {
   id: string
   name: string
   questionCount: number
+}
+
+interface FilterState {
+  subjects: string[]
+  chapters: string[]
+  topics: string[]
+  years: string[]
+  difficulty: string[]
+  questionType: string[]
+  previousYearOnly: boolean
+}
+
+interface QuestionListProps {
+  activeFilters: FilterState
 }
 
 const mockQuestions: Question[] = [
@@ -121,18 +136,19 @@ const mockCustomLists: CustomList[] = [
 type SortField = 'id' | 'description' | 'year' | 'attempted' | 'avgAccuracy' | 'difficulty'
 type SortOrder = 'asc' | 'desc'
 
-export default function QuestionList() {
+export default function QuestionList({ activeFilters }: QuestionListProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([])
   const [customLists] = useState<CustomList[]>(mockCustomLists)
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [totalQuestions, setTotalQuestions] = useState(0)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const questionsPerPage = 10
+  const observerTarget = useRef<HTMLDivElement>(null)
 
   const toggleBookmark = (questionId: string) => {
     setQuestions(prev => 
@@ -172,8 +188,8 @@ export default function QuestionList() {
     // Implementation would show list selection modal
   }
 
-  // Mock backend API call for fetching questions with pagination and sorting
-  const fetchQuestions = async (page: number = 1, sort?: { field: SortField, order: SortOrder }, search?: string) => {
+  // Mock backend API call for fetching questions with infinite scroll and sorting
+  const fetchQuestions = async (page: number = 1, sort?: { field: SortField, order: SortOrder }, search?: string, append: boolean = false) => {
     setLoading(true)
     
     // Simulate API delay
@@ -233,13 +249,17 @@ export default function QuestionList() {
     
     // Calculate pagination
     const total = allQuestions.length
-    const totalPagesCalc = Math.ceil(total / questionsPerPage)
     const startIndex = (page - 1) * questionsPerPage
     const endIndex = startIndex + questionsPerPage
     const paginatedQuestions = allQuestions.slice(startIndex, endIndex)
     
-    setQuestions(paginatedQuestions)
-    setTotalPages(totalPagesCalc)
+    if (append) {
+      setQuestions(prev => [...prev, ...paginatedQuestions])
+    } else {
+      setQuestions(paginatedQuestions)
+    }
+    
+    setHasMore(endIndex < total)
     setTotalQuestions(total)
     setLoading(false)
   }
@@ -248,28 +268,55 @@ export default function QuestionList() {
     const newOrder = sortField === field && sortOrder === 'desc' ? 'asc' : 'desc'
     setSortField(field)
     setSortOrder(newOrder)
+    setCurrentPage(1)
     
     // Fetch with new sorting
-    fetchQuestions(currentPage, { field, order: newOrder }, searchTerm)
+    fetchQuestions(1, { field, order: newOrder }, searchTerm, false)
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    const sort = sortField ? { field: sortField, order: sortOrder } : undefined
-    fetchQuestions(page, sort, searchTerm)
-  }
+  const loadMore = useCallback(() => {
+    if (!loading && hasMore) {
+      const nextPage = currentPage + 1
+      setCurrentPage(nextPage)
+      const sort = sortField ? { field: sortField, order: sortOrder } : undefined
+      fetchQuestions(nextPage, sort, searchTerm, true)
+    }
+  }, [loading, hasMore, currentPage, sortField, sortOrder, searchTerm])
 
   // Initialize data on component mount
   useEffect(() => {
-    fetchQuestions(1)
+    fetchQuestions(1, undefined, undefined, false)
   }, [])
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, loading, loadMore])
 
   // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setCurrentPage(1) // Reset to first page when searching
       const sort = sortField ? { field: sortField, order: sortOrder } : undefined
-      fetchQuestions(1, sort, searchTerm)
+      fetchQuestions(1, sort, searchTerm, false)
     }, 300)
 
     return () => clearTimeout(timeoutId)
@@ -311,6 +358,36 @@ export default function QuestionList() {
               className="pl-10"
             />
           </div>
+        </div>
+        
+        {/* Mobile Sort Controls */}
+        <div className="flex gap-2 w-full sm:hidden">
+          <Select value={sortField || ''} onValueChange={(value) => handleSort(value as SortField)}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="id">ID</SelectItem>
+              <SelectItem value="year">Year</SelectItem>
+              <SelectItem value="difficulty">Difficulty</SelectItem>
+              <SelectItem value="attempted">Attempts</SelectItem>
+              <SelectItem value="avgAccuracy">Avg Accuracy</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (sortField) {
+                const newOrder = sortOrder === 'desc' ? 'asc' : 'desc'
+                setSortOrder(newOrder)
+                fetchQuestions(currentPage, { field: sortField, order: newOrder }, searchTerm)
+              }
+            }}
+            disabled={!sortField}
+          >
+            {sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
@@ -368,8 +445,8 @@ export default function QuestionList() {
         </div>
       </div>
 
-      {/* Questions Table */}
-      <Card>
+      {/* Desktop Table View */}
+      <Card className="hidden sm:block">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full min-w-fit">
@@ -426,7 +503,7 @@ export default function QuestionList() {
                       onClick={() => handleSort('avgAccuracy')}
                       className="flex items-center gap-1 hover:text-primary"
                     >
-                      Avg Score {getSortIcon('avgAccuracy')}
+                      Avg Accuracy {getSortIcon('avgAccuracy')}
                     </button>
                   </th>
                   <th className="text-left py-3 px-2 font-medium w-32 sm:w-48">Tags</th>
@@ -516,50 +593,116 @@ export default function QuestionList() {
         </CardContent>
       </Card>
 
-      {/* Pagination */}
-      {!loading && questions.length > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * questionsPerPage) + 1} to {Math.min(currentPage * questionsPerPage, totalQuestions)} of {totalQuestions} results
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const startPage = Math.max(1, currentPage - 2)
-              const page = startPage + i
-              if (page > totalPages) return null
-              
-              return (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
+      {/* Mobile Card View */}
+      <div className="sm:hidden space-y-3">
+        {loading ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              Loading questions...
+            </CardContent>
+          </Card>
+        ) : questions.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              No questions found
+            </CardContent>
+          </Card>
+        ) : (
+          questions.map((question) => (
+            <Card key={question.id} className="overflow-hidden">
+              <CardContent className="p-3 space-y-2.5">
+                {/* Header Row */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-shrink">
+                    <Checkbox
+                      checked={selectedQuestions.includes(question.id)}
+                      onCheckedChange={() => toggleQuestionSelection(question.id)}
+                      className="flex-shrink-0"
+                    />
+                    <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">
+                      {question.hash}
+                    </code>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {getStatusIcon(question.status)}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleBookmark(question.id)}
+                      className="h-7 w-7 p-0"
+                    >
+                      {question.isBookmarked ? (
+                        <Bookmark className="h-3.5 w-3.5 fill-current text-yellow-500" />
+                      ) : (
+                        <BookmarkPlus className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Question Description */}
+                <Link 
+                  href={`/practice/question/${question.id}`}
+                  className="block"
                 >
-                  {page}
-                </Button>
-              )
-            })}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
+                  <p className="text-sm text-primary hover:underline line-clamp-2 leading-snug">
+                    {question.description}
+                  </p>
+                </Link>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                    {question.tags.subject}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                    {question.tags.topic}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                    {question.tags.exam}
+                  </Badge>
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                    <span className="text-muted-foreground text-[10px]">Year:</span>
+                    <span className="font-medium">{question.year}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded gap-1">
+                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">Difficulty:</span>
+                    <Badge className={`${getDifficultyColor(question.difficulty)} text-[10px] px-1.5 py-0 h-4`} variant="secondary">
+                      {question.difficulty}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                    <span className="text-muted-foreground text-[10px]">Attempts:</span>
+                    <span className="font-medium">{question.attempted.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-1.5 bg-gray-50 rounded gap-1">
+                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">Avg Acc:</span>
+                    <span className="font-medium">{question.avgAccuracy}%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Infinite Scroll Trigger */}
+      <div ref={observerTarget} className="py-4 text-center">
+        {loading && (
+          <div className="text-sm text-muted-foreground">
+            Loading more questions...
           </div>
-        </div>
-      )}
+        )}
+        {!loading && !hasMore && questions.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Showing all {totalQuestions} results
+          </div>
+        )}
+      </div>
     </div>
   )
 }

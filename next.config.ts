@@ -3,10 +3,12 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   async rewrites() {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://serve.iitiansquad.com';
+    
     return [
       {
         source: '/api/backend/:path*',
-        destination: 'https://serve.iitiansquad.com/:path*',
+        destination: `${backendUrl}/:path*`,
       },
     ];
   },

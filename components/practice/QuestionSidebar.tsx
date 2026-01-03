@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckCircle, XCircle, Circle } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -61,6 +62,7 @@ interface QuestionSidebarProps {
 
 export default function QuestionSidebar({ currentQuestionId }: QuestionSidebarProps) {
   const [questions] = useState<Question[]>(mockQuestions)
+  const [activeFilter, setActiveFilter] = useState<"all" | "attempted" | "unattempted">("all")
   
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -80,8 +82,16 @@ export default function QuestionSidebar({ currentQuestionId }: QuestionSidebarPr
   }
 
   const currentIndex = questions.findIndex(q => q.id === currentQuestionId)
-  const correctCount = questions.filter(q => q.status === "correct").length
-  const incorrectCount = questions.filter(q => q.status === "incorrect").length
+  
+  // Filter questions based on active tab
+  const filteredQuestions = questions.filter(q => {
+    if (activeFilter === "all") return true
+    if (activeFilter === "attempted") return q.status === "correct" || q.status === "incorrect"
+    if (activeFilter === "unattempted") return q.status === "unattempted"
+    return true
+  })
+  
+  const attemptedCount = questions.filter(q => q.status === "correct" || q.status === "incorrect").length
   const unattemptedCount = questions.filter(q => q.status === "unattempted").length
 
   return (
@@ -89,27 +99,31 @@ export default function QuestionSidebar({ currentQuestionId }: QuestionSidebarPr
       <CardHeader className="pb-4">
         <CardTitle className="text-lg">Question Navigation</CardTitle>
         
-        {/* Progress Summary */}
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="text-center p-2 bg-green-50 rounded">
-            <div className="font-semibold text-green-700">{correctCount}</div>
-            <div className="text-green-600">Correct</div>
-          </div>
-          <div className="text-center p-2 bg-red-50 rounded">
-            <div className="font-semibold text-red-700">{incorrectCount}</div>
-            <div className="text-red-600">Incorrect</div>
-          </div>
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-semibold text-gray-700">{unattemptedCount}</div>
-            <div className="text-gray-600">Pending</div>
-          </div>
-        </div>
+        {/* Filter Tabs */}
+        <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as typeof activeFilter)} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all" className="text-xs">
+              All ({questions.length})
+            </TabsTrigger>
+            <TabsTrigger value="attempted" className="text-xs">
+              Attempted ({attemptedCount})
+            </TabsTrigger>
+            <TabsTrigger value="unattempted" className="text-xs">
+              Unattempted ({unattemptedCount})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
 
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-full">
           <div className="p-4 space-y-2">
-            {questions.map((question, index) => (
+            {filteredQuestions.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No questions in this category
+              </div>
+            ) : (
+              filteredQuestions.map((question) => (
               <Link
                 key={question.id}
                 href={`/practice/question/${question.id}`}
@@ -142,12 +156,13 @@ export default function QuestionSidebar({ currentQuestionId }: QuestionSidebarPr
                     </p>
                     
                     <div className="mt-2 text-xs text-gray-500">
-                      Question {index + 1} of {questions.length}
+                      Question {questions.findIndex(q => q.id === question.id) + 1} of {questions.length}
                     </div>
                   </div>
                 </div>
               </Link>
-            ))}
+            ))
+            )}
           </div>
         </ScrollArea>
       </CardContent>

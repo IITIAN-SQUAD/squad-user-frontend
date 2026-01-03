@@ -147,9 +147,9 @@ export default function AttemptHistoryTab({ questionId }: AttemptHistoryTabProps
             {attempts.map((attempt) => (
               <div 
                 key={attempt.id} 
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <div className="flex items-center gap-2">
                     {attempt.isCorrect ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -165,8 +165,8 @@ export default function AttemptHistoryTab({ questionId }: AttemptHistoryTabProps
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <div className="flex-1">
                     <div className="text-sm">
                       <span className="text-muted-foreground">Your answer: </span>
                       <span className={attempt.isCorrect ? "text-green-600 font-medium" : "text-red-600"}>
@@ -178,16 +178,12 @@ export default function AttemptHistoryTab({ questionId }: AttemptHistoryTabProps
                     </div>
                   </div>
                   
-                  <div className="text-right">
+                  <div className="flex items-center gap-2">
                     <Badge 
                       variant={attempt.isCorrect ? "default" : "destructive"}
-                      className="mb-1"
                     >
                       {attempt.accuracy}%
                     </Badge>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(attempt.timestamp, { addSuffix: true })}
-                    </div>
                   </div>
                 </div>
               </div>

@@ -26,6 +26,12 @@ interface SavedFilter {
   filters: FilterState
 }
 
+interface PracticeFiltersProps {
+  filters: FilterState
+  onFiltersChange: (filters: FilterState) => void
+  onApplyFilters?: () => void
+}
+
 const mockData = {
   subjects: [
     {
@@ -85,16 +91,7 @@ const mockData = {
   questionType: ["Single Choice", "Multiple Choice", "Integer Type", "Numerical"]
 }
 
-export default function PracticeFilters() {
-  const [filters, setFilters] = useState<FilterState>({
-    subjects: [],
-    chapters: [],
-    topics: [],
-    years: [],
-    difficulty: [],
-    questionType: [],
-    previousYearOnly: true
-  })
+export default function PracticeFilters({ filters, onFiltersChange, onApplyFilters }: PracticeFiltersProps) {
   
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([
     {
@@ -173,26 +170,24 @@ export default function PracticeFilters() {
   }
 
   const handleFilterChange = (type: keyof FilterState, value: string) => {
-    setFilters(prev => {
-      const currentValue = prev[type];
-      
-      // Handle boolean type separately
-      if (typeof currentValue === 'boolean') {
-        return prev;
-      }
-      
-      // Handle array types
-      return {
-        ...prev,
-        [type]: currentValue.includes(value)
-          ? currentValue.filter(item => item !== value)
-          : [...currentValue, value]
-      };
+    const currentValue = filters[type];
+    
+    // Handle boolean type separately
+    if (typeof currentValue === 'boolean') {
+      return;
+    }
+    
+    // Handle array types
+    onFiltersChange({
+      ...filters,
+      [type]: currentValue.includes(value)
+        ? currentValue.filter(item => item !== value)
+        : [...currentValue, value]
     });
   }
 
   const clearAllFilters = () => {
-    setFilters({
+    onFiltersChange({
       subjects: [],
       chapters: [],
       topics: [],
@@ -200,11 +195,11 @@ export default function PracticeFilters() {
       difficulty: [],
       questionType: [],
       previousYearOnly: true
-    })
+    });
   }
 
   const loadSavedFilter = (savedFilter: SavedFilter) => {
-    setFilters(savedFilter.filters)
+    onFiltersChange(savedFilter.filters);
   }
 
   const deleteSavedFilter = (id: string) => {
@@ -467,7 +462,7 @@ export default function PracticeFilters() {
                   <Button variant="outline" size="sm" onClick={clearAllFilters} className="flex-1">
                     Clear All
                   </Button>
-                  <Button size="sm" className="flex-1">
+                  <Button size="sm" className="flex-1" onClick={onApplyFilters}>
                     Apply Filters
                   </Button>
                 </div>

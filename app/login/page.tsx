@@ -102,13 +102,15 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-20">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-brand" />
             <p className="mt-4 text-muted-foreground">Checking authentication...</p>
           </div>
         </div>
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
     );
   }
@@ -242,13 +244,12 @@ export default function LoginPage() {
               </div>
             </CardContent>
           </Card>
-          
-          {/* Spacer to push footer down */}
-          <div className="h-32"></div>
         </div>
       </div>
       
-      <Footer />
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

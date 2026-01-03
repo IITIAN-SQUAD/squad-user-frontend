@@ -284,13 +284,12 @@ export default function ForgotPasswordPage() {
             {currentStep === 'otp-verification' && renderOtpVerification()}
             {currentStep === 'new-password' && renderNewPassword()}
           </Card>
-          
-          {/* Spacer to push footer down */}
-          <div className="h-32"></div>
         </div>
       </div>
       
-      <Footer />
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }
