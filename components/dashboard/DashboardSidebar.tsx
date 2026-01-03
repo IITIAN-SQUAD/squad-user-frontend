@@ -158,7 +158,8 @@ export default function DashboardSidebar() {
           {/* <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-black font-bold text-lg">
             IS
           </div> */}
-          <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" />
+          {/* LOGO IMAGE HERE -- COMMENTED */}
+          {/* <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" /> */}
         </Link>
       </div>
       

@@ -36,21 +36,25 @@ export default function DashboardHeader() {
     // Fetch user data from backend
     const fetchUserData = async () => {
       try {
-        console.log('🔄 DashboardHeader: Fetching user profile...');
+        console.log("🔄 DashboardHeader: Fetching user profile...");
         const profile = await getUserProfile();
-        console.log('✅ DashboardHeader: Profile fetched:', profile);
-        
+        console.log("✅ DashboardHeader: Profile fetched:", profile);
+
         if (profile && profile.name && profile.email) {
           setIsAuthenticated(true);
           setUserName(profile.name);
           setUserEmail(profile.email);
           setUserImage(profile.image_url || null);
-          console.log('✅ Header profile data set:', { name: profile.name, email: profile.email, image: profile.image_url });
+          console.log("✅ Header profile data set:", {
+            name: profile.name,
+            email: profile.email,
+            image: profile.image_url,
+          });
         } else {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.log('ℹ️ User not authenticated');
+        console.log("ℹ️ User not authenticated");
         setIsAuthenticated(false);
       } finally {
         setLoading(false);
@@ -62,9 +66,9 @@ export default function DashboardHeader() {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -72,11 +76,11 @@ export default function DashboardHeader() {
   const handleLogout = async () => {
     try {
       await logoutApi();
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       // Even if API fails, redirect to login
-      router.push('/login');
+      router.push("/login");
     }
   };
 
@@ -85,82 +89,108 @@ export default function DashboardHeader() {
     { id: "jee", name: "JEE Main & Advanced" },
     { id: "neet", name: "NEET" },
     { id: "gate", name: "GATE" },
-    { id: "upsc", name: "UPSC" }
+    { id: "upsc", name: "UPSC" },
   ];
 
   return (
     <header className="border-b border-border h-16 px-6 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Select defaultValue="jee">
-          <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="Select exam" />
-          </SelectTrigger>
-          <SelectContent>
-            {examOptions.map((exam) => (
-              <SelectItem key={exam.id} value={exam.id}>
-                {exam.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="flex items-center gap-4">
-        {isAuthenticated ? (
-          <>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <Badge className="absolute top-0 right-0 h-2 w-2 p-0" variant="destructive" />
-            </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar>
-                    <AvatarImage src={userImage || undefined} alt={userName} />
-                    <AvatarFallback className="bg-brand text-gray-900">{getInitials(userName)}</AvatarFallback>
-                  </Avatar>
+      <img src="/isq-logo-white.svg" alt="Logo" className="w-32 h-auto" />
+
+      <div className="flex gap-3">
+        <div className="flex items-center gap-4">
+          <Select defaultValue="jee">
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Select exam" />
+            </SelectTrigger>
+            <SelectContent>
+              {examOptions.map((exam) => (
+                <SelectItem key={exam.id} value={exam.id}>
+                  {exam.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                <Badge
+                  className="absolute top-0 right-0 h-2 w-2 p-0"
+                  variant="destructive"
+                />
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar>
+                      <AvatarImage
+                        src={userImage || undefined}
+                        alt={userName}
+                      />
+                      <AvatarFallback className="bg-brand text-gray-900">
+                        {getInitials(userName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {userName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userEmail}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => router.push("/dashboard/profile")}
+                  >
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      router.push("/dashboard/profile?tab=account")
+                    }
+                  >
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{userName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {userEmail}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/dashboard/profile?tab=account')}>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        ) : (
-          <>
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm" className="bg-brand text-gray-900 hover:bg-brand/90">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up
-              </Button>
-            </Link>
-          </>
-        )}
+              </Link>
+              <Link href="/signup">
+                <Button
+                  size="sm"
+                  className="bg-brand text-gray-900 hover:bg-brand/90"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
