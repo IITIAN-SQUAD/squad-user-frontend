@@ -139,7 +139,7 @@ export default function DashboardSidebar() {
   const MobileSidebar = () => (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="md:hidden">
+        <Button variant="outline" size="icon" className="md:hidden absolute top-16 right-4">
           <ChevronRight className="h-5 w-5" />
         </Button>
       </SheetTrigger>

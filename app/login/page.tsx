@@ -123,17 +123,7 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto">
           <Card className="w-full">
             <CardHeader className="space-y-1">
-              <div className="flex justify-center mb-4">
-                <button 
-                  onClick={() => {
-                    console.log('Logo clicked, redirecting to landing page');
-                    router.push('/');
-                  }}
-                  className="cursor-pointer"
-                >
-                  <img src="/logo.svg" alt="IITian Squad" className="h-12" />
-                </button>
-              </div>
+              
               <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
               <CardDescription className="text-center">
                 Sign in to your IITian Squad account
