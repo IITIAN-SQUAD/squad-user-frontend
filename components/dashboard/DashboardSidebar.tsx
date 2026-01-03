@@ -147,10 +147,10 @@ export default function DashboardSidebar() {
 
   // Sidebar content component
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white min-h-0">
+    <div className="flex flex-col h-full bg-white">
       
       {/* Navigation Section - Takes remaining space */}
-      <nav className="flex-1 px-4 py-[19.2px] overflow-y-auto min-h-0">
+      <nav className="flex-1 px-4 py-[19.2px] overflow-y-auto">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.name}>
@@ -230,7 +230,7 @@ export default function DashboardSidebar() {
   // Return desktop sidebar for larger screens, mobile sidebar for smaller screens
   return (
     <>
-      <aside className="hidden md:flex w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex-col h-screen flex-shrink-0">
+      <aside className="hidden md:flex w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex-col h-screen flex-shrink-0 sticky top-0">
         <SidebarContent />
       </aside>
       <div className="md:hidden">

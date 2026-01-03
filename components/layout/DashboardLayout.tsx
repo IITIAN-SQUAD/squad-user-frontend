@@ -9,15 +9,16 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="h-screen bg-background relative overflow-auto">
-        <DashboardHeader />
-      <div className="flex">
-        <DashboardSidebar />
-        <div className="flex flex-col flex-1 min-w-0">
-          <main className="flex-1 p-[23.04px] overflow-x-hidden max-h-full">{children}</main>
+    <div className="bg-background h-screen flex flex-col">
+      <DashboardHeader />
+
+        <div className="flex">
+          <DashboardSidebar />
+          <main className="flex-1 p-[23.04px] overflow-y-auto">
+            {children}
+          </main>
         </div>
-      </div>
-      {/* Footer spans full width at the bottom */}
+
       <Footer />
     </div>
   );
