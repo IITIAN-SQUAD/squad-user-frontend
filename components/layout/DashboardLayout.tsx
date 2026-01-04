@@ -12,8 +12,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="bg-background h-screen">
       <DashboardHeader />
 
-      <div className="h-[52.41px]"/>
-
       <div className="flex">
         <DashboardSidebar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-[23.04px]">{children}</main>
