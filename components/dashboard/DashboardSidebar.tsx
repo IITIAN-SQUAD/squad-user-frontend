@@ -176,7 +176,7 @@ export default function DashboardSidebar() {
       <div className="p-4 border-t border-sidebar-border flex-shrink-0">
         {isAuthenticated ? (
           <>
-            <div className="flex items-center gap-3 mb-3">
+            <Link href="/dashboard/profile" className="flex items-center gap-3 mb-3" passHref>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={userImage || undefined} alt={userName} />
                 <AvatarFallback className="bg-brand text-gray-900 text-sm">{getInitials(userName)}</AvatarFallback>
@@ -185,7 +185,7 @@ export default function DashboardSidebar() {
                 <p className="font-medium text-sm truncate">{userName}</p>
                 <p className="text-xs text-sidebar-foreground/70 truncate">{userEmail}</p>
               </div>
-            </div>
+            </Link>
             
             <Button 
               variant="ghost" 
@@ -216,13 +216,6 @@ export default function DashboardSidebar() {
             </Button>
           </div>
         )}
-      </div>
-      
-      {/* Sidebar footer area - Fixed at very bottom */}
-      <div className="p-4 border-t border-sidebar-border bg-gray-50 flex-shrink-0">
-        <p className="text-xs text-center text-muted-foreground">
-          © 2024 IITian Squad
-        </p>
       </div>
     </div>
   );

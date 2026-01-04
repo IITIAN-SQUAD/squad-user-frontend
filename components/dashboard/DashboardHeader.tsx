@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, ChevronRight, LogIn, Menu, UserPlus } from "lucide-react";
+import { ArrowUpDown, ArrowUpNarrowWide, ArrowUpRight, Bell, ChevronRight, EllipsisVertical, LogIn, Menu, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getUserProfile, logout as logoutApi } from "@/lib/authApi";
@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { SheetTrigger } from "../ui/sheet";
+import { Arrow } from "@radix-ui/react-dropdown-menu";
 
 export default function DashboardHeader() {
   const router = useRouter();
@@ -122,7 +123,7 @@ export default function DashboardHeader() {
 
   return (
     <>
-      <header className="py-[7.71px] px-6 w-full flex items-center justify-between border-b border-border sticky top-0 z-50 bg-white">
+      <header className="py-[7.71px] px-6 w-full flex items-center justify-between border-b border-border fixed top-0 z-50 bg-white">
         <div className="flex gap-[9.95px]">
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden">
@@ -140,7 +141,7 @@ export default function DashboardHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative bg-stone-100 hover:bg-stone-200 cursor-pointer transition-colors duration-100"
+                className="relative cursor-pointer transition-colors duration-100"
               >
                 <Bell className="h-5 w-5" />
                 <Badge
@@ -254,9 +255,13 @@ export default function DashboardHeader() {
           </div>
         </div>
       </header>
-      <div className="md:hidden py-[7.71px] px-6 border-b ">
+      <div className="h-[52.41px]" />
+      <div className="md:hidden py-[7.71px] px-6 border-b">
         <div className="w-full flex items-center justify-between">
           {dropDown}
+          <Button variant="ghost" size="icon" className="md:hidden bg-stone-100 hover:bg-stone-200">
+            <EllipsisVertical className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </>
