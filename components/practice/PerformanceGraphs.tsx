@@ -12,42 +12,41 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Label, Pie, PieChart } from "recharts"
 
 const subjectCoverage = [
-  { subject: "Physics", covered: 85, total: 120, percentage: 71 },
+  { subject: "Physics", covered: 8, total: 100, percentage: 8 },
   { subject: "Chemistry", covered: 78, total: 95, percentage: 82 },
   { subject: "Mathematics", covered: 92, total: 110, percentage: 84 }
 ]
 
 const difficultyBreakdown = [
   { name: "Easy", value: 45, color: "hsl(142, 76%, 36%)" },
-  { name: "Medium", value: 35, color: "hsl(217, 91%, 60%)" },
+  { name: "Medium", value: 35, color: "var(--color-amber-400)" },
   { name: "Hard", value: 20, color: "hsl(262, 83%, 58%)" }
 ]
 
 function getSubjectColor(percentage: number) {
-  if (percentage >= 80) return "hsl(142, 76%, 36%)" 
-  if (percentage >= 60) return "hsl(217, 91%, 60%)" 
-  return "hsl(262, 83%, 58%)" 
+  if (percentage >= 10) return "var(--brand)" 
+  return "var(--brand-green)" 
 }
 
 export default function PerformanceGraphs() {
   return (
-    <div className="space-y-4 mb-6 sm:mb-8">
-      <Accordion type="single" collapsible defaultValue="performance-stats" className="space-y-4">
-        <AccordionItem value="performance-stats" className="border rounded-lg">
-          <Card className="border-0">
-            <AccordionTrigger className="px-6 py-4 hover:no-underline">
-              <h3 className="text-lg font-semibold">Performance Statistics</h3>
+    <div className="">
+      <Accordion type="single" collapsible defaultValue="performance-stats" className="space-y-4 p-0">
+        <AccordionItem value="performance-stats" className="border-t border-t-stone-100 p-0">
+          <div className="border-b border-b-stone-100">
+            <AccordionTrigger className="hover:no-underline py-[11.10px]">
+              <h3 className="text-[13.33px] md:text-base text-stone-700">Performance Statistics</h3>
             </AccordionTrigger>
             <AccordionContent>
-              <CardContent className="pt-0 pb-6 space-y-8">
+              <CardContent className="space-y-8 px-[9.25px]">
                 {/* Subject-wise Coverage */}
                 <div>
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-4">Subject-wise Coverage</h4>
+                  <h4 className="text-[13.33px] text-muted-foreground mb-4">Subject-wise Coverage</h4>
                   <div className="flex flex-wrap gap-4 sm:gap-6 justify-center">
                     {subjectCoverage.map((subject) => {
                       const chartData = [
                         { name: "covered", value: subject.covered, fill: getSubjectColor(subject.percentage) },
-                        { name: "remaining", value: subject.total - subject.covered, fill: "hsl(var(--muted))" }
+                        { name: "remaining", value: subject.total - subject.covered, fill: "var(--color-stone-200)" }
                       ]
                       const chartConfig = {
                         covered: { label: "Covered" },
@@ -113,7 +112,7 @@ export default function PerformanceGraphs() {
 
                 {/* Difficulty Distribution */}
                 <div>
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-4">Question Difficulty Distribution</h4>
+                  <h4 className="text-[13.33px] text-muted-foreground mb-4">Question Difficulty Distribution</h4>
                   <div className="space-y-4">
                     {/* Segmented Progress Bar */}
                     <div className="w-full h-8 flex rounded-lg overflow-hidden">
@@ -142,7 +141,6 @@ export default function PerformanceGraphs() {
                             style={{ backgroundColor: item.color }}
                           />
                           <span className="text-sm font-medium">{item.name}</span>
-                          <span className="text-sm text-muted-foreground">({item.value}%)</span>
                         </div>
                       ))}
                     </div>
@@ -150,7 +148,7 @@ export default function PerformanceGraphs() {
                 </div>
               </CardContent>
             </AccordionContent>
-          </Card>
+          </div>
         </AccordionItem>
       </Accordion>
     </div>
