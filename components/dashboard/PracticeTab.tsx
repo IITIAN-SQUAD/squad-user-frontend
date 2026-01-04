@@ -96,7 +96,7 @@ export default function PracticeTab() {
       <div className="space-y-6 sm:space-y-8">
         <div>
           <h2 className="text-2xl font-bold mb-6">Practice Section</h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-6 hidden md:block">
             Practice questions without any timer or accuracy pressure. Focus on learning and understanding concepts.
           </p>
         </div>
