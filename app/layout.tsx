@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, TASA_Orbiter } from "next/font/google";
 import "./globals.css";
+import { Sheet } from "@/components/ui/sheet";
 
-const inter = Inter({
+const inter = TASA_Orbiter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
@@ -20,8 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="antialiased min-h-screen">
-        {children}
+      <body className="antialiased">
+        <Sheet>
+          {children}
+        </Sheet>
       </body>
     </html>
   );

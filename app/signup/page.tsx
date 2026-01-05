@@ -163,14 +163,7 @@ export default function SignUpPage() {
   const renderInitialStep = () => (
     <>
       <CardHeader className="space-y-1">
-        <div className="flex justify-center mb-4">
-          <button 
-            onClick={handleLogoClick}
-            className="cursor-pointer bg-transparent border-none p-0"
-          >
-            <img src="/logo.svg" alt="IITian Squad" className="h-12" />
-          </button>
-        </div>
+
         <CardTitle className="text-2xl font-bold text-center">Join IITian Squad</CardTitle>
         <CardDescription className="text-center">
           Create your account to start your exam preparation journey
@@ -455,8 +448,8 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-        <div className="max-w-md mx-auto">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 min-h-[75vh]">
+        <div className="max-w-md w-full">
           <Card className="w-full">
             {currentStep === 'initial' && renderInitialStep()}
             {currentStep === 'email-entry' && renderEmailEntry()}
@@ -464,7 +457,7 @@ export default function SignUpPage() {
           </Card>
         </div>
       </div>
-      
+
       <div className="mt-auto">
         <Footer />
       </div>
