@@ -80,7 +80,7 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      await requestOtp(email);
+      await requestOtp(email, 'EMAIL_UPDATE');
       return true;
     } catch (err: any) {
       setError(err.message);

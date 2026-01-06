@@ -108,7 +108,7 @@ export default function SignUpPage() {
 
     try {
       setIsRequestingOtp(true);
-      await requestOtp(email);
+      await requestOtp(email, 'SIGNUP');
       setOtpSent(true);
       setCurrentStep('user-details');
     } catch (error: any) {
@@ -311,7 +311,7 @@ export default function SignUpPage() {
                   try {
                     setIsRequestingOtp(true);
                     setSignupError(null);
-                    await requestOtp(formData.email);
+                    await requestOtp(formData.email, 'SIGNUP');
                     setOtpSent(true);
                   } catch (error: any) {
                     const message = error?.message || 'Failed to resend verification code.';

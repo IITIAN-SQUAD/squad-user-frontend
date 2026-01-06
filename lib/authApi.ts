@@ -2,6 +2,7 @@ import { apiFetch } from "./apiClient";
 
 export interface RequestOtpPayload {
   email: string;
+  requestType: 'SIGNUP' | 'FORGOT_PASSWORD' | 'EMAIL_UPDATE';
 }
 
 export interface RequestOtpResponse {
@@ -27,17 +28,21 @@ export interface SignUpResponse {
   };
 }
 
-export async function requestOtp(email: string): Promise<RequestOtpResponse | void> {
-  const safeEmail = encodeURIComponent(email.trim());
-
-  if (!safeEmail) {
+export async function requestOtp(email: string, requestType: 'SIGNUP' | 'FORGOT_PASSWORD' | 'EMAIL_UPDATE'): Promise<RequestOtpResponse | void> {
+  if (!email || !email.trim()) {
     throw new Error("Email is required");
   }
 
+  const payload: RequestOtpPayload = {
+    email: email.trim(),
+    requestType
+  };
+
   const result = await apiFetch<RequestOtpResponse | void>(
-    `/v1/auth/user/request-otp/${safeEmail}`,
+    `/v1/auth/user/request-otp`,
     {
       method: "POST",
+      body: JSON.stringify(payload),
     }
   );
 
@@ -166,6 +171,28 @@ export async function handleOAuthCallback(payload: OAuth2CallbackPayload): Promi
     method: "POST",
     body: JSON.stringify(payload),
     credentials: "include",
+  });
+
+  return result;
+}
+
+// Reset Password
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export async function resetPassword(payload: ResetPasswordPayload): Promise<ResetPasswordResponse> {
+  const result = await apiFetch<ResetPasswordResponse>("/v1/auth/user/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 
   return result;

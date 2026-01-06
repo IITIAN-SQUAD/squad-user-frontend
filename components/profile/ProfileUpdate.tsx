@@ -126,7 +126,7 @@ export default function ProfileUpdate({ onProfileUpdated }: ProfileUpdateProps) 
       setError(null);
       
       console.log('📧 Sending OTP to:', email);
-      await requestOtp(email);
+      await requestOtp(email, 'EMAIL_UPDATE');
       setOtpSent(true);
       setSuccess('OTP sent to your new email address');
       setTimeout(() => setSuccess(null), 3000);
